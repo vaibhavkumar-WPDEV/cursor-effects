@@ -1,0 +1,1737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cursor Studies — RD Demo / 84 modes</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #0a0a0a; --bg-2: #111110;
+  --text: #f5f5f0; --muted: #6b6b66;
+  --accent: #c4ff3d; --cursor: #ffffff;
+  --line: rgba(245, 245, 240, 0.12);
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --sidebar: 300px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--text); }
+body {
+  font-family: 'DM Sans', sans-serif; font-weight: 300; line-height: 1.5;
+  overflow-x: hidden; min-height: 100vh;
+}
+body.cursor-active, body.cursor-active * { cursor: none !important; }
+
+@media (pointer: coarse) {
+  body.cursor-active, body.cursor-active * { cursor: auto !important; }
+  .cursor-el, #spotlight, #fx-canvas { display: none !important; }
+}
+
+/* ====== SIDEBAR ====== */
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: var(--sidebar);
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(12px);
+  border-right: 1px solid var(--line);
+  z-index: 100; display: flex; flex-direction: column; overflow-y: auto;
+}
+.sidebar-header { padding: 24px 28px 18px; border-bottom: 1px solid var(--line); }
+.sidebar-header h2 {
+  font-family: 'Instrument Serif', serif; font-weight: 400;
+  font-size: 24px; letter-spacing: -0.01em; margin-bottom: 4px;
+}
+.sidebar-header h2 em { font-style: italic; color: var(--accent); }
+.sidebar-header span {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
+}
+.mode-section {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted);
+  padding: 18px 28px 6px; opacity: 0.6;
+}
+.mode-list { list-style: none; }
+.mode-list li button {
+  width: 100%; text-align: left; background: transparent; border: none;
+  padding: 10px 28px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 0.05em; color: var(--muted);
+  display: flex; gap: 12px; align-items: center;
+  transition: all .25s var(--ease); position: relative;
+}
+.mode-list li button:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.mode-list li button .num { color: var(--muted); width: 22px; flex-shrink: 0; }
+.mode-list li button.active { color: var(--accent); background: rgba(196, 255, 61, 0.05); }
+.mode-list li button.active::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 2px; background: var(--accent);
+}
+.mode-list li button.active .num { color: var(--accent); }
+.sidebar-info {
+  padding: 18px 28px; border-top: 1px solid var(--line);
+  background: rgba(255,255,255,0.02); position: sticky; bottom: 0;
+}
+.sidebar-info strong {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--accent); display: block; margin-bottom: 6px;
+}
+.sidebar-info p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* ====== MAIN ====== */
+.main { margin-left: var(--sidebar); min-height: 100vh; }
+.hero { padding: 120px 60px 100px; max-width: 1200px; }
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted);
+  margin-bottom: 32px; display: flex; align-items: center; gap: 14px;
+}
+.eyebrow::before { content: ''; display: block; width: 36px; height: 1px; background: var(--accent); }
+h1 {
+  font-family: 'Instrument Serif', serif; font-weight: 400;
+  font-size: clamp(48px, 7vw, 108px); line-height: 0.95;
+  letter-spacing: -0.02em; margin-bottom: 40px;
+}
+h1 em { font-style: italic; color: var(--accent); }
+.hero > p { max-width: 540px; font-size: 17px; color: var(--muted); margin-bottom: 48px; }
+.btn-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 16px 28px; background: var(--text); color: var(--bg);
+  border: none; border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none;
+  font-weight: 500; transition: transform .3s var(--ease);
+}
+.btn:hover { transform: translateY(-2px); }
+.btn svg { transition: transform .3s var(--ease); }
+.btn:hover svg { transform: translate(3px, -3px); }
+.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--line); }
+.cards { padding: 60px 60px 100px; max-width: 1200px; }
+.section-head {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 48px; border-bottom: 1px solid var(--line); padding-bottom: 20px;
+}
+.section-head h2 {
+  font-family: 'Instrument Serif', serif; font-weight: 400;
+  font-size: 38px; letter-spacing: -0.01em;
+}
+.section-head span {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted);
+}
+.card-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 1px; background: var(--line); border: 1px solid var(--line);
+}
+.card {
+  background: var(--bg); padding: 40px 32px;
+  display: flex; flex-direction: column; gap: 14px;
+  min-height: 240px; text-decoration: none; color: var(--text);
+  position: relative; overflow: hidden; transition: background .4s var(--ease);
+}
+.card:hover { background: var(--bg-2); }
+.card .num {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 0.2em; color: var(--muted);
+}
+.card h3 {
+  font-family: 'Instrument Serif', serif; font-weight: 400;
+  font-size: 32px; line-height: 1.05; letter-spacing: -0.01em; margin-top: auto;
+}
+.card p { font-size: 13px; color: var(--muted); max-width: 280px; }
+.links-sec { padding: 60px 60px 100px; max-width: 1000px; }
+.links-sec p {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(24px, 3.5vw, 44px);
+  line-height: 1.2; letter-spacing: -0.01em;
+}
+.links-sec a {
+  color: var(--accent); text-decoration: none; font-style: italic;
+  border-bottom: 1px solid var(--accent);
+}
+footer {
+  padding: 60px; border-top: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted);
+  flex-wrap: wrap; gap: 20px;
+}
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--text); }
+
+/* ====== CURSOR BASE ====== */
+.cursor-el {
+  position: fixed; top: 0; left: 0;
+  pointer-events: none; z-index: 9999;
+  opacity: 0; transition: opacity .3s var(--ease);
+}
+body.cursor-active .cursor-el.is-active { opacity: 1; }
+
+/* ====== 1. LABEL ====== */
+.cur1-dot { width: 6px; height: 6px; background: var(--cursor); border-radius: 50%; mix-blend-mode: difference; transition: opacity .2s var(--ease); }
+.cur1-ring {
+  width: 44px; height: 44px; border: 1px solid var(--cursor); border-radius: 50%;
+  mix-blend-mode: difference; display: flex; align-items: center; justify-content: center;
+  transition: width .35s var(--ease), height .35s var(--ease), background .3s var(--ease);
+}
+.cur1-ring .label {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--cursor); opacity: 0; transform: scale(0.8);
+  transition: opacity .25s var(--ease), transform .25s var(--ease);
+}
+body.mode-1.cursor-hover .cur1-ring { width: 88px; height: 88px; background: var(--cursor); }
+body.mode-1.cursor-hover .cur1-ring .label { opacity: 1; transform: scale(1); color: var(--bg); mix-blend-mode: normal; }
+body.mode-1.cursor-hover .cur1-dot { opacity: 0; }
+
+/* ====== 2. MAGNETIC ====== */
+.cur2-blob { width: 36px; height: 36px; background: var(--cursor); border-radius: 50%; mix-blend-mode: difference; transition: width .4s var(--ease), height .4s var(--ease); }
+body.mode-2.cursor-hover .cur2-blob { width: 80px; height: 80px; }
+.magnetic { transition: transform .35s var(--ease); }
+
+/* ====== 3. TRAIL ====== */
+.cur3-dot { width: 12px; height: 12px; background: var(--cursor); border-radius: 50%; mix-blend-mode: difference; transition: width .3s var(--ease), height .3s var(--ease); }
+.cur3-trail { width: 12px; height: 12px; background: var(--cursor); border-radius: 50%; mix-blend-mode: difference; }
+body.mode-3.cursor-hover .cur3-dot { width: 50px; height: 50px; }
+
+/* ====== 4. ARROW-FILL ====== */
+.cur4-dot { width: 5px; height: 5px; background: var(--cursor); border-radius: 50%; mix-blend-mode: difference; transition: opacity .2s var(--ease); }
+.cur4-ring {
+  width: 42px; height: 42px; border: 1px solid var(--cursor); border-radius: 50%;
+  mix-blend-mode: difference; display: flex; align-items: center; justify-content: center;
+  transition: width .35s var(--ease), height .35s var(--ease), background .3s var(--ease);
+}
+.cur4-ring svg { width: 18px; height: 18px; stroke: var(--cursor); opacity: 0; transform: rotate(-45deg) scale(0.6); transition: opacity .25s var(--ease), transform .35s var(--ease); }
+body.mode-4.cursor-hover .cur4-ring { width: 64px; height: 64px; background: var(--cursor); }
+body.mode-4.cursor-hover .cur4-ring svg { opacity: 1; transform: rotate(0deg) scale(1); stroke: var(--bg); mix-blend-mode: normal; }
+body.mode-4.cursor-hover .cur4-dot { opacity: 0; }
+
+/* ====== 5. SQUISH ====== */
+.cur5-blob { width: 40px; height: 40px; background: var(--cursor); border-radius: 50%; mix-blend-mode: difference; will-change: transform; }
+
+/* ====== 6. SPOTLIGHT ====== */
+#spotlight {
+  position: fixed; inset: 0; pointer-events: none; z-index: 9998;
+  opacity: 0; transition: opacity .3s var(--ease);
+}
+body.mode-6 #spotlight { opacity: 1; }
+.cur6-dot { width: 8px; height: 8px; background: var(--cursor); border-radius: 50%; mix-blend-mode: difference; }
+
+/* ====== 7. CROSSHAIR ====== */
+.cur7-wrap { width: 40px; height: 40px; mix-blend-mode: difference; transition: width .3s var(--ease), height .3s var(--ease); position: relative; }
+.cur7-corner { position: absolute; width: 10px; height: 10px; border: 1px solid var(--cursor); transition: all .35s var(--ease); }
+.cur7-corner.tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+.cur7-corner.tr { top: 0; right: 0; border-left: none; border-bottom: none; }
+.cur7-corner.bl { bottom: 0; left: 0; border-right: none; border-top: none; }
+.cur7-corner.br { bottom: 0; right: 0; border-left: none; border-top: none; }
+.cur7-dot { position: absolute; top: 50%; left: 50%; width: 3px; height: 3px; background: var(--cursor); border-radius: 50%; transform: translate(-50%, -50%); }
+body.mode-7.cursor-hover .cur7-wrap { width: 70px; height: 70px; }
+body.mode-7.cursor-hover .cur7-corner { width: 14px; height: 14px; }
+
+/* ====== 8. AURA ====== */
+.cur8-aura {
+  width: 14px; height: 14px; background: var(--accent); border-radius: 50%;
+  box-shadow: 0 0 40px 8px rgba(196,255,61,0.6), 0 0 80px 16px rgba(196,255,61,0.25);
+  transition: all .35s var(--ease);
+}
+body.mode-8.cursor-hover .cur8-aura {
+  width: 28px; height: 28px; background: #fff;
+  box-shadow: 0 0 60px 20px rgba(255,255,255,0.5), 0 0 120px 40px rgba(196,255,61,0.3);
+}
+
+/* ====== 9. BRACKETS ====== */
+.cur9-wrap {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 36px; height: 36px;
+  font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 300;
+  color: var(--cursor); mix-blend-mode: difference;
+  transition: width .4s var(--ease), height .4s var(--ease);
+}
+body.mode-9.cursor-hover .cur9-wrap { width: 110px; height: 56px; font-size: 38px; }
+
+/* ====== 10. COMPASS ====== */
+.cur10-wrap { width: 36px; height: 36px; border: 1px solid var(--cursor); border-radius: 50%; display: flex; align-items: center; justify-content: center; mix-blend-mode: difference; transition: width .3s var(--ease), height .3s var(--ease); }
+.cur10-arrow { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 12px solid var(--cursor); transform-origin: center 70%; transition: transform .12s linear; }
+body.mode-10.cursor-hover .cur10-wrap { width: 56px; height: 56px; }
+
+/* ====== 11. LENS ====== */
+.cur11-lens {
+  width: 70px; height: 70px; border: 1px solid rgba(255,255,255,0.4); border-radius: 50%;
+  backdrop-filter: invert(1) hue-rotate(180deg);
+  -webkit-backdrop-filter: invert(1) hue-rotate(180deg);
+  transition: width .35s var(--ease), height .35s var(--ease);
+}
+body.mode-11.cursor-hover .cur11-lens { width: 110px; height: 110px; }
+
+/* ====== 12. PULSE ====== */
+.cur12-dot { width: 10px; height: 10px; background: var(--cursor); border-radius: 50%; mix-blend-mode: difference; }
+.cur12-ring {
+  position: absolute; top: 50%; left: 50%;
+  width: 10px; height: 10px; border: 1px solid var(--cursor); border-radius: 50%;
+  transform: translate(-50%, -50%); mix-blend-mode: difference;
+  animation: cur12pulse 2s infinite; opacity: 0;
+}
+.cur12-ring:nth-child(3) { animation-delay: 0.66s; }
+.cur12-ring:nth-child(4) { animation-delay: 1.33s; }
+@keyframes cur12pulse { 0% { width: 10px; height: 10px; opacity: 1; } 100% { width: 80px; height: 80px; opacity: 0; } }
+
+/* ====== 13. AXIS ====== */
+.cur13-h, .cur13-v {
+  position: fixed; pointer-events: none; background: var(--cursor);
+  mix-blend-mode: difference; opacity: 0; z-index: 9997;
+  transition: opacity .3s var(--ease);
+}
+body.mode-13 .cur13-h, body.mode-13 .cur13-v { opacity: 0.35; }
+.cur13-h { left: 0; right: 0; height: 1px; }
+.cur13-v { top: 0; bottom: 0; width: 1px; }
+.cur13-center { width: 8px; height: 8px; border: 1px solid var(--cursor); mix-blend-mode: difference; transform: rotate(45deg); transition: width .25s var(--ease), height .25s var(--ease); }
+body.mode-13.cursor-hover .cur13-center { width: 16px; height: 16px; }
+
+/* ====== 14. INK / shared canvas ====== */
+#fx-canvas {
+  position: fixed; inset: 0; pointer-events: none; z-index: 9996;
+  opacity: 0; transition: opacity .3s var(--ease);
+}
+body.mode-14 #fx-canvas, body.mode-18 #fx-canvas, body.mode-20 #fx-canvas, body.mode-21 #fx-canvas,
+body.mode-56 #fx-canvas, body.mode-57 #fx-canvas, body.mode-58 #fx-canvas, body.mode-60 #fx-canvas { opacity: 1; }
+body.mode-14 #fx-canvas { mix-blend-mode: difference; }
+body.mode-20 #fx-canvas { mix-blend-mode: difference; }
+body.mode-56 #fx-canvas, body.mode-58 #fx-canvas, body.mode-60 #fx-canvas { mix-blend-mode: difference; }
+.cur14-dot, .cur18-dot, .cur20-dot, .cur21-dot { width: 8px; height: 8px; background: var(--cursor); border-radius: 50%; mix-blend-mode: difference; }
+
+/* ====== 15. SNAKE (gooey segments) ====== */
+.cur15-wrap { filter: blur(4px) contrast(15); width: 1px; height: 1px; }
+.cur15-seg {
+  position: absolute; top: 0; left: 0;
+  width: 22px; height: 22px; background: white; border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ====== 16. METABALL ====== */
+.cur16-wrap { filter: blur(8px) contrast(20); width: 1px; height: 1px; mix-blend-mode: difference; }
+.cur16-a, .cur16-b { position: absolute; background: white; border-radius: 50%; transform: translate(-50%, -50%); }
+.cur16-a { width: 28px; height: 28px; }
+.cur16-b { width: 20px; height: 20px; }
+
+/* ====== 17. RGB GLITCH ====== */
+.cur17-r, .cur17-g, .cur17-b {
+  position: absolute; top: 50%; left: 50%;
+  width: 18px; height: 18px; border-radius: 50%;
+  transform: translate(-50%, -50%); mix-blend-mode: screen;
+}
+.cur17-r { background: #ff0044; }
+.cur17-g { background: #00ff88; }
+.cur17-b { background: #0088ff; }
+
+/* ====== 18. CONFETTI — canvas ====== */
+.cur18-dot { opacity: 0.4; }
+
+/* ====== 19. SMOKE ====== */
+.cur19-p { position: absolute; top: 0; left: 0; width: 30px; height: 30px; background: rgba(255,255,255,0.5); border-radius: 50%; filter: blur(8px); transform: translate(-50%, -50%); }
+.cur19-dot { width: 6px; height: 6px; background: var(--cursor); border-radius: 50%; mix-blend-mode: difference; position: absolute; top: 0; left: 0; transform: translate(-50%, -50%); }
+
+/* ====== 20. SKETCH — canvas + tiny dot ====== */
+/* ====== 21. SPEED LINES — canvas ====== */
+
+/* ====== 22. COORDINATES ====== */
+.cur22-wrap { display: flex; align-items: center; gap: 12px; mix-blend-mode: difference; }
+.cur22-cross { position: relative; width: 20px; height: 20px; }
+.cur22-cross::before, .cur22-cross::after { content: ''; position: absolute; background: var(--cursor); }
+.cur22-cross::before { left: 50%; top: 0; bottom: 0; width: 1px; transform: translateX(-50%); }
+.cur22-cross::after { top: 50%; left: 0; right: 0; height: 1px; transform: translateY(-50%); }
+.cur22-text {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 0.05em; color: var(--cursor); white-space: nowrap;
+  background: rgba(0,0,0,0.4); padding: 4px 8px; border: 1px solid var(--cursor); border-radius: 2px;
+}
+
+/* ====== 23. BOUNCY ====== */
+.cur23-ball { width: 24px; height: 24px; background: var(--cursor); border-radius: 50%; mix-blend-mode: difference; box-shadow: 0 0 20px rgba(255,255,255,0.4); }
+
+/* ====== 24. HEART ====== */
+.cur24-heart { width: 28px; height: 28px; mix-blend-mode: difference; animation: cur24beat 0.9s infinite var(--ease); transform-origin: center; }
+.cur24-heart svg { width: 100%; height: 100%; fill: var(--cursor); }
+@keyframes cur24beat {
+  0%, 100% { transform: scale(1); }
+  20% { transform: scale(1.18); }
+  40% { transform: scale(0.95); }
+  60% { transform: scale(1.1); }
+  80% { transform: scale(1); }
+}
+body.mode-24.cursor-hover .cur24-heart { animation-duration: 0.45s; }
+
+/* ====== 25. SPARKLE ====== */
+.cur25-star { width: 40px; height: 40px; mix-blend-mode: difference; animation: cur25spin 8s linear infinite; }
+.cur25-star svg { width: 100%; height: 100%; }
+.cur25-star path { fill: none; stroke: var(--cursor); stroke-width: 1.2; }
+@keyframes cur25spin { to { transform: rotate(360deg); } }
+body.mode-25.cursor-hover .cur25-star { animation-duration: 2s; }
+
+/* ====== 26. IRIS ====== */
+.cur26-eye { width: 50px; height: 50px; mix-blend-mode: difference; transition: width .3s var(--ease), height .3s var(--ease); }
+.cur26-eye svg { width: 100%; height: 100%; }
+.cur26-eye .outline { fill: none; stroke: var(--cursor); stroke-width: 1.5; }
+.cur26-eye .pupil { fill: var(--cursor); transition: r 0.3s var(--ease); }
+body.mode-26.cursor-hover .cur26-eye { width: 60px; height: 60px; }
+body.mode-26.cursor-hover .cur26-eye .pupil { r: 9; }
+
+/* ====== 27. SUN ====== */
+.cur27-sun { width: 50px; height: 50px; mix-blend-mode: difference; position: relative; animation: cur27rot 12s linear infinite; }
+.cur27-sun::before { content: ''; position: absolute; inset: 35%; background: var(--cursor); border-radius: 50%; }
+.cur27-ray { position: absolute; top: 50%; left: 50%; width: 24px; height: 1px; background: var(--cursor); transform-origin: 0 50%; }
+@keyframes cur27rot { to { transform: rotate(360deg); } }
+body.mode-27.cursor-hover .cur27-sun { animation-duration: 3s; }
+
+/* ====== 28. HOURGLASS ====== */
+.cur28-hg { width: 26px; height: 36px; mix-blend-mode: difference; animation: cur28flip 4s linear infinite; }
+.cur28-hg svg { width: 100%; height: 100%; }
+.cur28-hg path { stroke: var(--cursor); fill: none; stroke-width: 1.5; }
+.cur28-hg .sand { fill: var(--cursor); }
+@keyframes cur28flip { 0%, 45% { transform: rotate(0deg); } 50%, 95% { transform: rotate(180deg); } 100% { transform: rotate(360deg); } }
+
+/* ====== 29. GEAR ====== */
+.cur29-gear { width: 40px; height: 40px; mix-blend-mode: difference; animation: cur29rot 6s linear infinite; }
+.cur29-gear svg { width: 100%; height: 100%; }
+.cur29-gear path { fill: none; stroke: var(--cursor); stroke-width: 1.2; }
+@keyframes cur29rot { to { transform: rotate(360deg); } }
+body.mode-29.cursor-hover .cur29-gear { animation-duration: 1.5s; }
+
+/* ====== 30. APERTURE ====== */
+.cur30-ap { width: 44px; height: 44px; mix-blend-mode: difference; position: relative; transition: transform .35s var(--ease); }
+.cur30-blade { position: absolute; top: 50%; left: 50%; width: 22px; height: 1px; background: var(--cursor); transform-origin: 0 0; transition: transform .35s var(--ease); }
+body.mode-30.cursor-hover .cur30-ap { transform: rotate(60deg); }
+
+/* ====== 31. RADAR ====== */
+.cur31-r { width: 48px; height: 48px; border: 1px solid var(--cursor); border-radius: 50%; mix-blend-mode: difference; position: relative; overflow: hidden; }
+.cur31-r::before { content: ''; position: absolute; top: 50%; left: 50%; width: 50%; height: 1px; background: linear-gradient(to right, var(--cursor), transparent); transform-origin: 0 0; animation: cur31sweep 2.5s linear infinite; }
+.cur31-r::after { content: ''; position: absolute; inset: 47%; background: var(--cursor); border-radius: 50%; }
+@keyframes cur31sweep { to { transform: rotate(360deg); } }
+
+/* ====== 32. BUBBLE ====== */
+.cur32-bub {
+  background: rgba(255,255,255,0.95); color: var(--bg);
+  padding: 8px 14px; border-radius: 16px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  position: relative; white-space: nowrap;
+  transition: padding .25s var(--ease);
+}
+.cur32-bub::after {
+  content: ''; position: absolute; bottom: -5px; left: 14px;
+  width: 12px; height: 12px; background: rgba(255,255,255,0.95);
+  transform: rotate(45deg); border-radius: 2px;
+}
+
+/* ====== 33. POETRY ====== */
+.cur33-poem { position: relative; width: 1px; height: 1px; }
+.cur33-w {
+  position: absolute; top: 0; left: 0;
+  font-family: 'Instrument Serif', serif; font-style: italic;
+  color: var(--cursor); mix-blend-mode: difference;
+  font-size: 14px; white-space: nowrap;
+  transform-origin: center;
+}
+
+/* ====== 34. LOADING ====== */
+.cur34-load { display: flex; gap: 6px; mix-blend-mode: difference; }
+.cur34-load span {
+  width: 8px; height: 8px; background: var(--cursor); border-radius: 50%;
+  animation: cur34bounce 1.2s infinite var(--ease);
+}
+.cur34-load span:nth-child(2) { animation-delay: 0.15s; }
+.cur34-load span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes cur34bounce { 0%, 60%, 100% { transform: translateY(0); opacity: 1; } 30% { transform: translateY(-12px); opacity: 0.5; } }
+
+/* ============================================================ */
+/* ===== EXTENDED MODES 35–84 · geometric / professional ===== */
+/* ============================================================ */
+/* All wrappers (#curN) are positioned in JS; visual shape lives on
+   the inner .curN so JS transforms never clash with CSS transforms. */
+
+/* shared HUD text tag */
+.cur-tag {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text);
+  background: rgba(10,10,10,0.85); border: 1px solid rgba(245,245,240,0.28);
+  padding: 3px 7px; white-space: nowrap; border-radius: 3px;
+}
+
+/* 35 Square */
+.cur35 { width: 22px; height: 22px; border: 1px solid var(--cursor); mix-blend-mode: difference; transition: width .35s var(--ease), height .35s var(--ease), background .3s var(--ease); }
+body.mode-35.cursor-hover .cur35 { width: 52px; height: 52px; background: var(--cursor); }
+/* 36 Diamond */
+.cur36 { width: 22px; height: 22px; border: 1px solid var(--cursor); mix-blend-mode: difference; transform: rotate(45deg); transition: width .35s var(--ease), height .35s var(--ease); }
+body.mode-36.cursor-hover .cur36 { width: 40px; height: 40px; }
+/* 37 Plus */
+.cur37 { position: relative; width: 26px; height: 26px; mix-blend-mode: difference; transition: width .3s var(--ease), height .3s var(--ease); }
+.cur37::before, .cur37::after { content:''; position:absolute; background: var(--cursor); }
+.cur37::before { left:50%; top:0; bottom:0; width:1px; transform:translateX(-50%); }
+.cur37::after { top:50%; left:0; right:0; height:1px; transform:translateY(-50%); }
+body.mode-37.cursor-hover .cur37 { width: 44px; height: 44px; }
+/* 38 Caret / I-beam */
+.cur38 { width: 3px; height: 26px; background: var(--cursor); mix-blend-mode: difference; position: relative; animation: cur38blink 1.1s steps(1) infinite; transition: height .3s var(--ease); }
+.cur38::before, .cur38::after { content:''; position:absolute; left:-4px; right:-4px; height:2px; background: var(--cursor); }
+.cur38::before { top:0; } .cur38::after { bottom:0; }
+@keyframes cur38blink { 0%,50%{opacity:1;} 51%,100%{opacity:.25;} }
+body.mode-38.cursor-hover .cur38 { height: 38px; }
+/* 39 Corner frame */
+.cur39 { position: relative; width: 30px; height: 30px; mix-blend-mode: difference; transition: width .35s var(--ease), height .35s var(--ease); }
+.cur39 span { position:absolute; width:8px; height:8px; border:1.5px solid var(--cursor); }
+.cur39 .tl{top:0;left:0;border-right:none;border-bottom:none;}
+.cur39 .tr{top:0;right:0;border-left:none;border-bottom:none;}
+.cur39 .bl{bottom:0;left:0;border-right:none;border-top:none;}
+.cur39 .br{bottom:0;right:0;border-left:none;border-top:none;}
+body.mode-39.cursor-hover .cur39 { width: 58px; height: 58px; }
+/* 40 Hexagon */
+.cur40 { width: 30px; height: 30px; mix-blend-mode: difference; transition: width .3s var(--ease), height .3s var(--ease); }
+.cur40 svg { width:100%; height:100%; display:block; }
+.cur40 polygon { fill:none; stroke: var(--cursor); stroke-width: 1.2; }
+body.mode-40.cursor-hover .cur40 { width: 46px; height: 46px; }
+/* 41 Tick */
+.cur41 { width: 1px; height: 28px; background: var(--cursor); mix-blend-mode: difference; transition: height .3s var(--ease); }
+body.mode-41.cursor-hover .cur41 { height: 46px; }
+/* 42 Slash */
+.cur42 { width: 2px; height: 28px; background: var(--cursor); mix-blend-mode: difference; transform: rotate(20deg); transition: transform .35s var(--ease), height .3s var(--ease); }
+body.mode-42.cursor-hover .cur42 { transform: rotate(-20deg); height: 40px; }
+/* 43 Underline */
+.cur43 { width: 22px; height: 2px; background: var(--cursor); mix-blend-mode: difference; transition: width .3s var(--ease); }
+body.mode-43.cursor-hover .cur43 { width: 64px; }
+/* 44 Bar */
+.cur44 { width: 30px; height: 6px; background: var(--cursor); mix-blend-mode: difference; transition: width .3s var(--ease), height .3s var(--ease); }
+body.mode-44.cursor-hover .cur44 { width: 60px; height: 10px; }
+/* 45 Notch */
+.cur45 { position:relative; width: 22px; height: 22px; mix-blend-mode: difference; transition: width .35s var(--ease), height .35s var(--ease); }
+.cur45::before { content:''; position:absolute; top:0; left:0; width:12px; height:12px; border-left:1.5px solid var(--cursor); border-top:1.5px solid var(--cursor); }
+.cur45::after { content:''; position:absolute; bottom:0; right:0; width:12px; height:12px; border-right:1.5px solid var(--cursor); border-bottom:1.5px solid var(--cursor); }
+body.mode-45.cursor-hover .cur45 { width: 44px; height: 44px; }
+/* 46 Pillar */
+.cur46 { width: 4px; height: 26px; background: var(--cursor); mix-blend-mode: difference; transition: height .3s var(--ease); }
+body.mode-46.cursor-hover .cur46 { height: 44px; }
+/* 47 Marker */
+.cur47 { width: 10px; height: 10px; background: var(--cursor); mix-blend-mode: difference; transition: transform .3s var(--ease); }
+body.mode-47.cursor-hover .cur47 { transform: scale(2.4); }
+/* 48 Rotor */
+.cur48 { width: 24px; height: 24px; border: 1.5px solid var(--cursor); mix-blend-mode: difference; transition: transform .4s var(--ease); }
+body.mode-48.cursor-hover .cur48 { transform: rotate(45deg); }
+/* 49 Arrow */
+.cur49 { width: 24px; height: 24px; mix-blend-mode: difference; transition: transform .1s linear; }
+.cur49 svg { width:100%; height:100%; display:block; fill: var(--cursor); }
+/* 50 Chevron */
+.cur50 { width: 22px; height: 22px; mix-blend-mode: difference; transition: transform .1s linear; }
+.cur50 svg { width:100%; height:100%; display:block; stroke: var(--cursor); fill:none; }
+/* 51 Needle */
+.cur51 { width: 12px; height: 34px; mix-blend-mode: difference; transition: transform .1s linear; }
+.cur51 svg { width:100%; height:100%; display:block; fill: var(--cursor); }
+/* 52 Blade */
+.cur52 { width: 34px; height: 2px; background: var(--cursor); mix-blend-mode: difference; transition: transform .1s linear; }
+/* 53 Stretch */
+.cur53 { width: 30px; height: 8px; background: var(--cursor); border-radius: 4px; mix-blend-mode: difference; will-change: transform; }
+/* 54 Skew tile */
+.cur54 { width: 26px; height: 26px; background: var(--cursor); mix-blend-mode: difference; will-change: transform; transition: transform .15s var(--ease); }
+/* 55 Elastic */
+.cur55 { width: 24px; height: 10px; background: var(--cursor); border-radius: 3px; mix-blend-mode: difference; will-change: transform; }
+/* 56-58, 60 canvas trails — small square lead */
+.cur56-d, .cur57-d, .cur58-d, .cur60-d { width:6px; height:6px; background: var(--cursor); mix-blend-mode: difference; }
+/* 59 Chain */
+.cur59-seg { position:absolute; top:0; left:0; width:14px; height:14px; background: var(--cursor); mix-blend-mode: difference; }
+/* 61 Reticle */
+.cur61 { position:relative; width: 40px; height: 40px; mix-blend-mode: difference; transition: width .35s var(--ease), height .35s var(--ease); }
+.cur61 span { position:absolute; width:9px; height:9px; border:1px solid var(--cursor); }
+.cur61 .tl{top:0;left:0;border-right:none;border-bottom:none;}
+.cur61 .tr{top:0;right:0;border-left:none;border-bottom:none;}
+.cur61 .bl{bottom:0;left:0;border-right:none;border-top:none;}
+.cur61 .br{bottom:0;right:0;border-left:none;border-top:none;}
+.cur61 i { position:absolute; top:50%; left:50%; width:6px; height:6px; transform:translate(-50%,-50%); }
+.cur61 i::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--cursor);transform:translateX(-50%);}
+.cur61 i::after{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--cursor);transform:translateY(-50%);}
+body.mode-61.cursor-hover .cur61 { width: 66px; height: 66px; }
+/* 62 Scan */
+.cur62 { position:relative; width: 54px; height: 18px; mix-blend-mode: difference; }
+.cur62::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--cursor);transform:translateY(-50%);}
+.cur62 i{position:absolute;top:0;bottom:0;width:6px;left:50%;transform:translateX(-50%);border-left:1px solid var(--cursor);border-right:1px solid var(--cursor);}
+/* 63 Inspector */
+.cur63 { position:relative; width: 18px; height: 18px; mix-blend-mode: difference; }
+.cur63::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--cursor);transform:translateX(-50%);}
+.cur63::after{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--cursor);transform:translateY(-50%);}
+.cur63 .cur-tag{position:absolute;left:16px;top:-7px;}
+/* 64 Ruler */
+.cur64{position:relative;width:60px;height:14px;mix-blend-mode:difference;}
+.cur64::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--cursor);}
+.cur64 i{position:absolute;top:0;width:1px;background:var(--cursor);}
+/* 65 Grid snap */
+.cur65{width:14px;height:14px;border:1px solid var(--accent);mix-blend-mode:difference;}
+/* 66 Crosshair lines */
+.cur66-h,.cur66-v{position:fixed;pointer-events:none;background:var(--cursor);mix-blend-mode:difference;opacity:0;z-index:9997;transition:opacity .3s var(--ease);}
+body.mode-66 .cur66-h, body.mode-66 .cur66-v{opacity:.3;}
+.cur66-h{left:0;right:0;height:1px;} .cur66-v{top:0;bottom:0;width:1px;}
+.cur66{width:10px;height:10px;border:1px solid var(--cursor);mix-blend-mode:difference;}
+/* 67 Target lock */
+.cur67{position:relative;width:46px;height:46px;mix-blend-mode:difference;}
+.cur67 span{position:absolute;width:12px;height:12px;border:1.5px solid var(--accent);transition:all .3s var(--ease);}
+.cur67 .tl{top:0;left:0;border-right:none;border-bottom:none;}
+.cur67 .tr{top:0;right:0;border-left:none;border-bottom:none;}
+.cur67 .bl{bottom:0;left:0;border-right:none;border-top:none;}
+.cur67 .br{bottom:0;right:0;border-left:none;border-top:none;}
+body.mode-67.cursor-hover .cur67 .tl{top:7px;left:7px;}
+body.mode-67.cursor-hover .cur67 .tr{top:7px;right:7px;}
+body.mode-67.cursor-hover .cur67 .bl{bottom:7px;left:7px;}
+body.mode-67.cursor-hover .cur67 .br{bottom:7px;right:7px;}
+/* 68 Soft square */
+.cur68{width:30px;height:30px;background:rgba(255,255,255,.9);border-radius:7px;filter:blur(7px);transition:width .35s var(--ease),height .35s var(--ease);}
+body.mode-68.cursor-hover .cur68{width:54px;height:54px;}
+/* 69 Spotlight (rectangular) */
+.cur69{width:240px;height:150px;border-radius:10px;box-shadow:0 0 0 9999px rgba(10,10,10,.86);}
+/* 70 Frame glow */
+.cur70{width:38px;height:38px;border:1px solid var(--accent);border-radius:9px;box-shadow:0 0 16px rgba(196,255,61,.55),inset 0 0 8px rgba(196,255,61,.25);transition:width .35s var(--ease),height .35s var(--ease);}
+body.mode-70.cursor-hover .cur70{width:60px;height:60px;}
+/* 71 Tint */
+.cur71{width:160px;height:160px;background:radial-gradient(closest-side,rgba(196,255,61,.10),transparent);border-radius:14px;}
+/* 72 Magnet frame (element-aware) */
+.cur72{border:1px solid var(--accent);border-radius:5px;box-shadow:0 0 0 1px rgba(196,255,61,.12);}
+/* 73 Highlight (element-aware) */
+.cur73{background:rgba(196,255,61,.15);border-radius:3px;}
+/* 74 Link underline (element-aware) */
+.cur74{height:2px;background:var(--accent);}
+/* 75 Label tag */
+.cur75 .cur-tag{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+/* 76 Status */
+.cur76 .cur-tag::before{content:'●';color:var(--accent);margin-right:5px;}
+/* 79 Pulse square */
+.cur79{width:18px;height:18px;border:1px solid var(--cursor);mix-blend-mode:difference;animation:cur79p 1.8s var(--ease) infinite;}
+@keyframes cur79p{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.5);opacity:.4;}}
+/* 80 Breathe */
+.cur80{width:22px;height:22px;border:1px solid var(--cursor);border-radius:4px;mix-blend-mode:difference;animation:cur80b 3s var(--ease) infinite;}
+@keyframes cur80b{0%,100%{transform:scale(.85);}50%{transform:scale(1.15);}}
+/* 81 Precision */
+.cur81{position:relative;width:18px;height:18px;mix-blend-mode:difference;transition:width .3s var(--ease),height .3s var(--ease);}
+.cur81::before{content:'';position:absolute;top:50%;left:50%;width:3px;height:3px;background:var(--cursor);transform:translate(-50%,-50%);}
+.cur81 b{position:absolute;inset:0;border:1px solid var(--cursor);}
+body.mode-81.cursor-hover .cur81{width:34px;height:34px;}
+/* 82 Bracket dot */
+.cur82{position:relative;width:16px;height:16px;mix-blend-mode:difference;}
+.cur82::before{content:'';position:absolute;top:50%;left:50%;width:3px;height:3px;background:var(--cursor);transform:translate(-50%,-50%);}
+.cur82::after{content:'';position:absolute;top:0;left:0;width:7px;height:7px;border-left:1.5px solid var(--cursor);border-top:1.5px solid var(--cursor);}
+/* 83 Hairline */
+.cur83{width:1px;height:20px;background:var(--cursor);mix-blend-mode:difference;transition:height .3s var(--ease);}
+body.mode-83.cursor-hover .cur83{height:30px;}
+/* 84 Morph */
+.cur84{width:22px;height:22px;border:1.5px solid var(--cursor);mix-blend-mode:difference;transition:width .35s var(--ease),height .35s var(--ease),border-radius .35s var(--ease),background .35s var(--ease);}
+body.mode-84.cursor-hover .cur84{width:60px;height:2px;border-radius:2px;background:var(--cursor);}
+
+/* ====== MOBILE ====== */
+@media (max-width: 900px) {
+  :root { --sidebar: 0px; }
+  .sidebar {
+    position: fixed; bottom: 0; top: auto; left: 0; right: 0;
+    width: 100%; height: 65vh;
+    border-right: none; border-top: 1px solid var(--line);
+    transform: translateY(calc(100% - 60px));
+    transition: transform .35s var(--ease);
+  }
+  .sidebar.open { transform: translateY(0); }
+  .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; }
+  .main { margin-left: 0; padding-bottom: 80px; }
+  .hero, .cards, .links-sec, footer { padding-left: 24px; padding-right: 24px; }
+  .card-grid { grid-template-columns: 1fr; }
+  .sidebar-toggle { display: inline-block !important; }
+}
+.sidebar-toggle { display: none; background: var(--accent); color: var(--bg); border: none; padding: 6px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 6px; font-weight: 500; }
+</style>
+</head>
+<body class="mode-1 cursor-active">
+
+<!-- ===== OVERLAYS ===== -->
+<div id="spotlight"></div>
+<canvas id="fx-canvas"></canvas>
+
+<!-- ===== CURSOR ELEMENTS ===== -->
+<div class="cursor-el is-active" id="cur1">
+  <div class="cur1-dot" id="cur1-dot"></div>
+  <div class="cur1-ring" id="cur1-ring"><span class="label" id="cur1-label">View</span></div>
+</div>
+<div class="cursor-el" id="cur2"><div class="cur2-blob" id="cur2-blob"></div></div>
+<div class="cursor-el" id="cur3">
+  <div class="cur3-dot" id="cur3-dot"></div>
+  <div class="cur3-trail"></div><div class="cur3-trail"></div><div class="cur3-trail"></div>
+  <div class="cur3-trail"></div><div class="cur3-trail"></div><div class="cur3-trail"></div>
+</div>
+<div class="cursor-el" id="cur4">
+  <div class="cur4-dot" id="cur4-dot"></div>
+  <div class="cur4-ring" id="cur4-ring">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline>
+    </svg>
+  </div>
+</div>
+<div class="cursor-el" id="cur5"><div class="cur5-blob" id="cur5-blob"></div></div>
+<div class="cursor-el" id="cur6"><div class="cur6-dot"></div></div>
+<div class="cursor-el" id="cur7">
+  <div class="cur7-wrap" id="cur7-wrap">
+    <div class="cur7-corner tl"></div><div class="cur7-corner tr"></div>
+    <div class="cur7-corner bl"></div><div class="cur7-corner br"></div>
+    <div class="cur7-dot"></div>
+  </div>
+</div>
+<div class="cursor-el" id="cur8"><div class="cur8-aura"></div></div>
+<div class="cursor-el" id="cur9"><div class="cur9-wrap" id="cur9-wrap"><span>[</span><span>]</span></div></div>
+<div class="cursor-el" id="cur10"><div class="cur10-wrap"><div class="cur10-arrow" id="cur10-arrow"></div></div></div>
+<div class="cursor-el" id="cur11"><div class="cur11-lens"></div></div>
+<div class="cursor-el" id="cur12" style="position: fixed; width: 1px; height: 1px;">
+  <div class="cur12-dot" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+  <div class="cur12-ring"></div><div class="cur12-ring"></div><div class="cur12-ring"></div>
+</div>
+<div class="cur13-h" id="cur13-h"></div><div class="cur13-v" id="cur13-v"></div>
+<div class="cursor-el" id="cur13"><div class="cur13-center"></div></div>
+<div class="cursor-el" id="cur14"><div class="cur14-dot"></div></div>
+
+<!-- 15. Snake -->
+<div class="cursor-el" id="cur15">
+  <div class="cur15-wrap" id="cur15-wrap">
+    <div class="cur15-seg"></div><div class="cur15-seg"></div><div class="cur15-seg"></div>
+    <div class="cur15-seg"></div><div class="cur15-seg"></div><div class="cur15-seg"></div>
+    <div class="cur15-seg"></div><div class="cur15-seg"></div>
+  </div>
+</div>
+<!-- 16. Metaball -->
+<div class="cursor-el" id="cur16">
+  <div class="cur16-wrap" id="cur16-wrap">
+    <div class="cur16-a" id="cur16-a"></div>
+    <div class="cur16-b" id="cur16-b"></div>
+  </div>
+</div>
+<!-- 17. RGB Glitch -->
+<div class="cursor-el" id="cur17">
+  <div class="cur17-r" id="cur17-r"></div>
+  <div class="cur17-g" id="cur17-g"></div>
+  <div class="cur17-b" id="cur17-b"></div>
+</div>
+<!-- 18. Confetti (uses canvas) -->
+<div class="cursor-el" id="cur18"><div class="cur18-dot"></div></div>
+<!-- 19. Smoke -->
+<div class="cursor-el" id="cur19">
+  <div id="cur19-particles" style="position: relative; width: 1px; height: 1px;"></div>
+  <div class="cur19-dot"></div>
+</div>
+<!-- 20. Sketch (canvas) -->
+<div class="cursor-el" id="cur20"><div class="cur20-dot"></div></div>
+<!-- 21. Speed lines (canvas) -->
+<div class="cursor-el" id="cur21"><div class="cur21-dot"></div></div>
+<!-- 22. Coordinates -->
+<div class="cursor-el" id="cur22">
+  <div class="cur22-wrap">
+    <div class="cur22-cross"></div>
+    <div class="cur22-text" id="cur22-text">0, 0</div>
+  </div>
+</div>
+<!-- 23. Bouncy -->
+<div class="cursor-el" id="cur23"><div class="cur23-ball"></div></div>
+<!-- 24. Heart -->
+<div class="cursor-el" id="cur24">
+  <div class="cur24-heart">
+    <svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C0 8 2 4 6 4c2 0 3.5 1 4 2 .5-1 2-2 4-2 4 0 6 4 3.5 8-2.5 4.5-5.5 9-5.5 9z"/></svg>
+  </div>
+</div>
+<!-- 25. Sparkle -->
+<div class="cursor-el" id="cur25">
+  <div class="cur25-star">
+    <svg viewBox="0 0 40 40">
+      <path d="M20 4 L22 18 L36 20 L22 22 L20 36 L18 22 L4 20 L18 18 Z"/>
+      <line x1="20" y1="0" x2="20" y2="6" stroke="white" stroke-width="1"/>
+      <line x1="20" y1="34" x2="20" y2="40" stroke="white" stroke-width="1"/>
+      <line x1="0" y1="20" x2="6" y2="20" stroke="white" stroke-width="1"/>
+      <line x1="34" y1="20" x2="40" y2="20" stroke="white" stroke-width="1"/>
+    </svg>
+  </div>
+</div>
+<!-- 26. Iris -->
+<div class="cursor-el" id="cur26">
+  <div class="cur26-eye">
+    <svg viewBox="0 0 50 50">
+      <path class="outline" d="M5 25 Q25 8 45 25 Q25 42 5 25 Z"/>
+      <circle class="pupil" cx="25" cy="25" r="6"/>
+    </svg>
+  </div>
+</div>
+<!-- 27. Sun -->
+<div class="cursor-el" id="cur27">
+  <div class="cur27-sun" id="cur27-sun"></div>
+</div>
+<!-- 28. Hourglass -->
+<div class="cursor-el" id="cur28">
+  <div class="cur28-hg">
+    <svg viewBox="0 0 26 36">
+      <path d="M4 2 L22 2 L22 8 L13 18 L22 28 L22 34 L4 34 L4 28 L13 18 L4 8 Z"/>
+      <path class="sand" d="M7 5 L19 5 L13 13 Z"/>
+      <path class="sand" d="M11 25 L15 25 L13 21 Z"/>
+    </svg>
+  </div>
+</div>
+<!-- 29. Gear -->
+<div class="cursor-el" id="cur29">
+  <div class="cur29-gear">
+    <svg viewBox="0 0 40 40">
+      <path d="M20 4 L22 8 L26 7 L27 11 L31 13 L30 17 L34 20 L30 23 L31 27 L27 29 L26 33 L22 32 L20 36 L18 32 L14 33 L13 29 L9 27 L10 23 L6 20 L10 17 L9 13 L13 11 L14 7 L18 8 Z"/>
+      <circle cx="20" cy="20" r="6"/>
+    </svg>
+  </div>
+</div>
+<!-- 30. Aperture -->
+<div class="cursor-el" id="cur30">
+  <div class="cur30-ap" id="cur30-ap">
+    <div class="cur30-blade" style="transform: rotate(0deg);"></div>
+    <div class="cur30-blade" style="transform: rotate(60deg);"></div>
+    <div class="cur30-blade" style="transform: rotate(120deg);"></div>
+    <div class="cur30-blade" style="transform: rotate(180deg);"></div>
+    <div class="cur30-blade" style="transform: rotate(240deg);"></div>
+    <div class="cur30-blade" style="transform: rotate(300deg);"></div>
+  </div>
+</div>
+<!-- 31. Radar -->
+<div class="cursor-el" id="cur31"><div class="cur31-r"></div></div>
+<!-- 32. Bubble -->
+<div class="cursor-el" id="cur32">
+  <div class="cur32-bub" id="cur32-bub">Hover me</div>
+</div>
+<!-- 33. Poetry -->
+<div class="cursor-el" id="cur33">
+  <div class="cur33-poem" id="cur33-poem">
+    <span class="cur33-w">drift</span>
+    <span class="cur33-w">flow</span>
+    <span class="cur33-w">linger</span>
+    <span class="cur33-w">trace</span>
+    <span class="cur33-w">echo</span>
+  </div>
+</div>
+<!-- 34. Loading -->
+<div class="cursor-el" id="cur34">
+  <div class="cur34-load"><span></span><span></span><span></span></div>
+</div>
+
+<!-- ============ EXTENDED MODES 35–84 (non-round / business) ============ -->
+<div class="cursor-el" id="cur35"><div class="cur35"></div></div>
+<div class="cursor-el" id="cur36"><div class="cur36"></div></div>
+<div class="cursor-el" id="cur37"><div class="cur37"></div></div>
+<div class="cursor-el" id="cur38"><div class="cur38"></div></div>
+<div class="cursor-el" id="cur39"><div class="cur39"><span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></div></div>
+<div class="cursor-el" id="cur40"><div class="cur40"><svg viewBox="0 0 30 30"><polygon points="7.5,1 22.5,1 29,15 22.5,29 7.5,29 1,15"/></svg></div></div>
+<div class="cursor-el" id="cur41"><div class="cur41"></div></div>
+<div class="cursor-el" id="cur42"><div class="cur42"></div></div>
+<div class="cursor-el" id="cur43"><div class="cur43"></div></div>
+<div class="cursor-el" id="cur44"><div class="cur44"></div></div>
+<div class="cursor-el" id="cur45"><div class="cur45"></div></div>
+<div class="cursor-el" id="cur46"><div class="cur46"></div></div>
+<div class="cursor-el" id="cur47"><div class="cur47"></div></div>
+<div class="cursor-el" id="cur48"><div class="cur48"></div></div>
+<div class="cursor-el" id="cur49"><div class="cur49" id="cur49-arrow"><svg viewBox="0 0 24 24"><path d="M12 2 L20 22 L12 17 L4 22 Z"/></svg></div></div>
+<div class="cursor-el" id="cur50"><div class="cur50" id="cur50-ch"><svg viewBox="0 0 24 24"><polyline points="8 4 18 12 8 20" stroke-width="2"/></svg></div></div>
+<div class="cursor-el" id="cur51"><div class="cur51" id="cur51-n"><svg viewBox="0 0 12 34"><path d="M6 0 L10 30 L6 24 L2 30 Z"/></svg></div></div>
+<div class="cursor-el" id="cur52"><div class="cur52" id="cur52-b"></div></div>
+<div class="cursor-el" id="cur53"><div class="cur53" id="cur53-b"></div></div>
+<div class="cursor-el" id="cur54"><div class="cur54" id="cur54-t"></div></div>
+<div class="cursor-el" id="cur55"><div class="cur55" id="cur55-t"></div></div>
+<div class="cursor-el" id="cur56"><div class="cur56-d"></div></div>
+<div class="cursor-el" id="cur57"><div class="cur57-d"></div></div>
+<div class="cursor-el" id="cur58"><div class="cur58-d"></div></div>
+<div class="cursor-el" id="cur59"><div id="cur59-wrap" style="position:relative;width:1px;height:1px;"></div></div>
+<div class="cursor-el" id="cur60"><div class="cur60-d"></div></div>
+<div class="cursor-el" id="cur61"><div class="cur61"><span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span><i></i></div></div>
+<div class="cursor-el" id="cur62"><div class="cur62"><i></i></div></div>
+<div class="cursor-el" id="cur63"><div class="cur63"><span class="cur-tag" id="cur63-text">TEXT</span></div></div>
+<div class="cursor-el" id="cur64"><div class="cur64" id="cur64-wrap"></div></div>
+<div class="cursor-el" id="cur65"><div class="cur65"></div></div>
+<div class="cur66-h" id="cur66-h"></div><div class="cur66-v" id="cur66-v"></div>
+<div class="cursor-el" id="cur66"><div class="cur66"></div></div>
+<div class="cursor-el" id="cur67"><div class="cur67"><span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></div></div>
+<div class="cursor-el" id="cur68"><div class="cur68"></div></div>
+<div class="cursor-el" id="cur69"><div class="cur69"></div></div>
+<div class="cursor-el" id="cur70"><div class="cur70"></div></div>
+<div class="cursor-el" id="cur71"><div class="cur71"></div></div>
+<div class="cursor-el cur72" id="cur72"></div>
+<div class="cursor-el cur73" id="cur73"></div>
+<div class="cursor-el cur74" id="cur74"></div>
+<div class="cursor-el" id="cur75"><div class="cur75"><span class="cur-tag" id="cur75-text">View</span></div></div>
+<div class="cursor-el" id="cur76"><div class="cur76"><span class="cur-tag" id="cur76-text">TEXT</span></div></div>
+<div class="cursor-el" id="cur77"><div class="cur77"><span class="cur-tag" id="cur77-text">0% · 0%</span></div></div>
+<div class="cursor-el" id="cur78"><div class="cur78"><span class="cur-tag" id="cur78-text">000</span></div></div>
+<div class="cursor-el" id="cur79"><div class="cur79"></div></div>
+<div class="cursor-el" id="cur80"><div class="cur80"></div></div>
+<div class="cursor-el" id="cur81"><div class="cur81"><b></b></div></div>
+<div class="cursor-el" id="cur82"><div class="cur82"></div></div>
+<div class="cursor-el" id="cur83"><div class="cur83"></div></div>
+<div class="cursor-el" id="cur84"><div class="cur84"></div></div>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div>
+      <h2>Cursor <em>Studies</em></h2>
+      <span>RD / Demo · 84 modes</span>
+    </div>
+    <button class="sidebar-toggle" id="sidebar-toggle">Pick</button>
+  </div>
+  <div class="mode-section">Foundations</div>
+  <ul class="mode-list">
+    <li><button class="active" data-mode="1"><span class="num">01</span> Label</button></li>
+    <li><button data-mode="2"><span class="num">02</span> Magnetic + morph</button></li>
+    <li><button data-mode="3"><span class="num">03</span> Trail</button></li>
+    <li><button data-mode="4"><span class="num">04</span> Arrow-fill</button></li>
+  </ul>
+  <div class="mode-section">Physical</div>
+  <ul class="mode-list">
+    <li><button data-mode="5"><span class="num">05</span> Squish (velocity)</button></li>
+    <li><button data-mode="23"><span class="num">23</span> Bouncy ball</button></li>
+    <li><button data-mode="15"><span class="num">15</span> Snake (gooey)</button></li>
+    <li><button data-mode="16"><span class="num">16</span> Metaball</button></li>
+  </ul>
+  <div class="mode-section">Atmosphere</div>
+  <ul class="mode-list">
+    <li><button data-mode="6"><span class="num">06</span> Spotlight</button></li>
+    <li><button data-mode="8"><span class="num">08</span> Aura / glow</button></li>
+    <li><button data-mode="11"><span class="num">11</span> Lens (invert)</button></li>
+    <li><button data-mode="12"><span class="num">12</span> Pulse rings</button></li>
+    <li><button data-mode="19"><span class="num">19</span> Smoke</button></li>
+  </ul>
+  <div class="mode-section">Designer</div>
+  <ul class="mode-list">
+    <li><button data-mode="7"><span class="num">07</span> Crosshair</button></li>
+    <li><button data-mode="9"><span class="num">09</span> Brackets</button></li>
+    <li><button data-mode="10"><span class="num">10</span> Compass</button></li>
+    <li><button data-mode="13"><span class="num">13</span> Axis lines</button></li>
+    <li><button data-mode="22"><span class="num">22</span> Coordinates</button></li>
+    <li><button data-mode="30"><span class="num">30</span> Aperture</button></li>
+  </ul>
+  <div class="mode-section">Drawing</div>
+  <ul class="mode-list">
+    <li><button data-mode="14"><span class="num">14</span> Ink trail</button></li>
+    <li><button data-mode="20"><span class="num">20</span> Sketch</button></li>
+    <li><button data-mode="21"><span class="num">21</span> Speed lines</button></li>
+    <li><button data-mode="18"><span class="num">18</span> Confetti</button></li>
+  </ul>
+  <div class="mode-section">Glitch / Tech</div>
+  <ul class="mode-list">
+    <li><button data-mode="17"><span class="num">17</span> RGB glitch</button></li>
+    <li><button data-mode="29"><span class="num">29</span> Gear</button></li>
+    <li><button data-mode="31"><span class="num">31</span> Radar</button></li>
+    <li><button data-mode="34"><span class="num">34</span> Loading dots</button></li>
+  </ul>
+  <div class="mode-section">Iconographic</div>
+  <ul class="mode-list">
+    <li><button data-mode="24"><span class="num">24</span> Heart</button></li>
+    <li><button data-mode="25"><span class="num">25</span> Sparkle / star</button></li>
+    <li><button data-mode="26"><span class="num">26</span> Iris (eye)</button></li>
+    <li><button data-mode="27"><span class="num">27</span> Sun</button></li>
+    <li><button data-mode="28"><span class="num">28</span> Hourglass</button></li>
+  </ul>
+  <div class="mode-section">Typographic</div>
+  <ul class="mode-list">
+    <li><button data-mode="32"><span class="num">32</span> Speech bubble</button></li>
+    <li><button data-mode="33"><span class="num">33</span> Poetry (orbit)</button></li>
+  </ul>
+  <div class="mode-section">Geometric · non-round</div>
+  <ul class="mode-list">
+    <li><button data-mode="35"><span class="num">35</span> Square</button></li>
+    <li><button data-mode="36"><span class="num">36</span> Diamond</button></li>
+    <li><button data-mode="37"><span class="num">37</span> Plus</button></li>
+    <li><button data-mode="39"><span class="num">39</span> Corner frame</button></li>
+    <li><button data-mode="40"><span class="num">40</span> Hexagon</button></li>
+    <li><button data-mode="45"><span class="num">45</span> Notch</button></li>
+    <li><button data-mode="47"><span class="num">47</span> Marker</button></li>
+    <li><button data-mode="48"><span class="num">48</span> Rotor</button></li>
+  </ul>
+  <div class="mode-section">Lines & Editorial</div>
+  <ul class="mode-list">
+    <li><button data-mode="38"><span class="num">38</span> Caret (I-beam)</button></li>
+    <li><button data-mode="41"><span class="num">41</span> Tick</button></li>
+    <li><button data-mode="42"><span class="num">42</span> Slash</button></li>
+    <li><button data-mode="43"><span class="num">43</span> Underline</button></li>
+    <li><button data-mode="44"><span class="num">44</span> Bar</button></li>
+    <li><button data-mode="46"><span class="num">46</span> Pillar</button></li>
+    <li><button data-mode="83"><span class="num">83</span> Hairline</button></li>
+    <li><button data-mode="84"><span class="num">84</span> Morph (square→line)</button></li>
+  </ul>
+  <div class="mode-section">Directional</div>
+  <ul class="mode-list">
+    <li><button data-mode="49"><span class="num">49</span> Arrow</button></li>
+    <li><button data-mode="50"><span class="num">50</span> Chevron</button></li>
+    <li><button data-mode="51"><span class="num">51</span> Needle</button></li>
+    <li><button data-mode="52"><span class="num">52</span> Blade</button></li>
+  </ul>
+  <div class="mode-section">Velocity</div>
+  <ul class="mode-list">
+    <li><button data-mode="53"><span class="num">53</span> Stretch</button></li>
+    <li><button data-mode="54"><span class="num">54</span> Skew tile</button></li>
+    <li><button data-mode="55"><span class="num">55</span> Elastic</button></li>
+  </ul>
+  <div class="mode-section">Line trails</div>
+  <ul class="mode-list">
+    <li><button data-mode="56"><span class="num">56</span> Line</button></li>
+    <li><button data-mode="57"><span class="num">57</span> Ribbon</button></li>
+    <li><button data-mode="58"><span class="num">58</span> Comet</button></li>
+    <li><button data-mode="59"><span class="num">59</span> Chain</button></li>
+    <li><button data-mode="60"><span class="num">60</span> Thread</button></li>
+  </ul>
+  <div class="mode-section">HUD / Technical</div>
+  <ul class="mode-list">
+    <li><button data-mode="61"><span class="num">61</span> Reticle</button></li>
+    <li><button data-mode="62"><span class="num">62</span> Scan</button></li>
+    <li><button data-mode="64"><span class="num">64</span> Ruler</button></li>
+    <li><button data-mode="65"><span class="num">65</span> Grid snap</button></li>
+    <li><button data-mode="66"><span class="num">66</span> Crosshair</button></li>
+    <li><button data-mode="67"><span class="num">67</span> Target lock</button></li>
+    <li><button data-mode="77"><span class="num">77</span> Ratio</button></li>
+    <li><button data-mode="78"><span class="num">78</span> Index</button></li>
+  </ul>
+  <div class="mode-section">Smart · element-aware</div>
+  <ul class="mode-list">
+    <li><button data-mode="72"><span class="num">72</span> Magnet frame</button></li>
+    <li><button data-mode="73"><span class="num">73</span> Highlight</button></li>
+    <li><button data-mode="74"><span class="num">74</span> Link underline</button></li>
+    <li><button data-mode="63"><span class="num">63</span> Inspector</button></li>
+    <li><button data-mode="75"><span class="num">75</span> Label tag</button></li>
+    <li><button data-mode="76"><span class="num">76</span> Status</button></li>
+  </ul>
+  <div class="mode-section">Ambient</div>
+  <ul class="mode-list">
+    <li><button data-mode="68"><span class="num">68</span> Soft square</button></li>
+    <li><button data-mode="69"><span class="num">69</span> Spotlight (rect)</button></li>
+    <li><button data-mode="70"><span class="num">70</span> Frame glow</button></li>
+    <li><button data-mode="71"><span class="num">71</span> Tint</button></li>
+    <li><button data-mode="79"><span class="num">79</span> Pulse</button></li>
+    <li><button data-mode="80"><span class="num">80</span> Breathe</button></li>
+    <li><button data-mode="81"><span class="num">81</span> Precision</button></li>
+    <li><button data-mode="82"><span class="num">82</span> Bracket dot</button></li>
+  </ul>
+  <div class="sidebar-info">
+    <strong id="info-title">01 · Label</strong>
+    <p id="info-desc">Ring expands on hover and reveals a contextual label. Editorial / agency feel.</p>
+  </div>
+</aside>
+
+<!-- ===== MAIN ===== -->
+<div class="main">
+  <section class="hero">
+    <div class="eyebrow">Cursor study — 84 directions</div>
+    <h1>Move, <em>hover</em>, switch. Pick the one that feels right.</h1>
+    <p>All eighty-four modes run on the same page. Choose from the left rail — grouped by character. Hover the buttons, cards, inline links and footer to feel each one. Modes 35+ are non-round and tuned for business sites.</p>
+    <div class="btn-row">
+      <a href="#cards" class="btn magnetic" data-cursor="Explore">
+        View the work
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline>
+        </svg>
+      </a>
+      <a href="#" class="btn btn-outline magnetic" data-cursor="Talk">Get in touch</a>
+    </div>
+  </section>
+
+  <section class="cards" id="cards">
+    <div class="section-head">
+      <h2>Selected work</h2>
+      <span>04 case studies · 2026</span>
+    </div>
+    <div class="card-grid">
+      <a href="#" class="card magnetic" data-cursor="View"><span class="num">01 / Branding</span><p>Identity system &amp; site for a regenerative architecture studio.</p><h3>Atelier Norden</h3></a>
+      <a href="#" class="card magnetic" data-cursor="Read"><span class="num">02 / Editorial</span><p>A long-form essay on how attention shapes interfaces.</p><h3>The Attention Economy</h3></a>
+      <a href="#" class="card magnetic" data-cursor="Play"><span class="num">03 / Film</span><p>30-second product film for a Berlin headphone brand.</p><h3>Sonar — Spring Drop</h3></a>
+      <a href="#" class="card magnetic" data-cursor="Open"><span class="num">04 / Web</span><p>E-commerce platform rebuild for a Japanese ceramics maker.</p><h3>Kiln &amp; Co.</h3></a>
+    </div>
+  </section>
+
+  <section class="links-sec">
+    <p>We are a small studio of designers, engineers and writers building <a href="#">considered digital products</a> for ambitious teams. Often quiet, occasionally loud — always <a href="#">crafted with care</a>.</p>
+  </section>
+
+  <footer>
+    <div>© 2026 — RD STUDIO</div>
+    <div style="display: flex; gap: 28px;">
+      <a href="#" data-cursor="Mail">hello@rd.studio</a>
+      <a href="#" data-cursor="Visit">Instagram</a>
+      <a href="#" data-cursor="Visit">LinkedIn</a>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const body = document.body;
+  if (!window.matchMedia('(pointer: fine)').matches) return;
+
+  // ===== STATE =====
+  let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+  let lastMx = mx, lastMy = my, vx = 0, vy = 0;
+  let activeMode = 1;
+
+  // ===== MODE INFO =====
+  const modeInfo = {
+    1: { t:'01 · Label', d:'Ring expands on hover and reveals a contextual label. Editorial / agency feel.' },
+    2: { t:'02 · Magnetic + morph', d:'Buttons are pulled toward the cursor; cursor enlarges over interactive elements.' },
+    3: { t:'03 · Trail', d:'Lead dot with a fluid trail of smaller dots.' },
+    4: { t:'04 · Arrow-fill', d:'Ring fills solid on hover with a clean arrow icon.' },
+    5: { t:'05 · Squish', d:'Blob stretches based on velocity. Tactile and playful.' },
+    6: { t:'06 · Spotlight', d:'Cursor reveals a soft spotlight; rest of page dims.' },
+    7: { t:'07 · Crosshair', d:'Four corner brackets frame the cursor.' },
+    8: { t:'08 · Aura', d:'Glowing accent-colored orb with soft halo.' },
+    9: { t:'09 · Brackets', d:'[ and ] widen on hover. Minimal, typographic.' },
+    10:{ t:'10 · Compass', d:'Arrow rotates to point in the direction of movement.' },
+    11:{ t:'11 · Lens', d:'Circular lens inverts colors behind it.' },
+    12:{ t:'12 · Pulse', d:'Continuous sonar-like rings expand from the cursor.' },
+    13:{ t:'13 · Axis', d:'Full-screen guide lines through cursor. Blueprint feel.' },
+    14:{ t:'14 · Ink', d:'Cursor draws a fading ink trail across the page.' },
+    15:{ t:'15 · Snake', d:'Connected gooey segments flow behind the cursor like a serpent.' },
+    16:{ t:'16 · Metaball', d:'Two blobs that visually merge using a gooey filter.' },
+    17:{ t:'17 · RGB glitch', d:'Red, green, blue channels split with movement and converge at rest.' },
+    18:{ t:'18 · Confetti', d:'Continuous colorful particles emit from the cursor with physics.' },
+    19:{ t:'19 · Smoke', d:'Wispy white particles trail behind and fade into nothing.' },
+    20:{ t:'20 · Sketch', d:'Scratchy pencil line that thickens and thins with velocity.' },
+    21:{ t:'21 · Speed lines', d:'Anime-style motion lines stream behind the cursor.' },
+    22:{ t:'22 · Coordinates', d:'Crosshair with live X / Y readout. HUD aesthetic.' },
+    23:{ t:'23 · Bouncy', d:'Physics-based ball with momentum that overshoots.' },
+    24:{ t:'24 · Heart', d:'Beating heart that quickens on hover.' },
+    25:{ t:'25 · Sparkle', d:'Slow-rotating star with sparkle rays.' },
+    26:{ t:'26 · Iris', d:'Eye that follows the cursor; pupil dilates on hover.' },
+    27:{ t:'27 · Sun', d:'Radiating sun rays that rotate slowly.' },
+    28:{ t:'28 · Hourglass', d:'Hourglass that drains and flips on a loop.' },
+    29:{ t:'29 · Gear', d:'Rotating mechanical cog. Spins faster on hover.' },
+    30:{ t:'30 · Aperture', d:'Six camera blades rotate on hover.' },
+    31:{ t:'31 · Radar', d:'Sweeping radar line inside a circle.' },
+    32:{ t:'32 · Speech bubble', d:'Speech bubble showing the hover label as floating text.' },
+    33:{ t:'33 · Poetry', d:'Italic word fragments orbit the cursor slowly.' },
+    34:{ t:'34 · Loading', d:'Three dots bouncing in sequence. Quiet, mechanical.' },
+    35:{ t:'35 · Square', d:'Precise square outline that fills on hover. Clean, editorial.' },
+    36:{ t:'36 · Diamond', d:'Rotated square marker. Minimal and geometric.' },
+    37:{ t:'37 · Plus', d:'Thin plus mark for pixel-precise pointing.' },
+    38:{ t:'38 · Caret', d:'Blinking text I-beam. Writing / editorial feel.' },
+    39:{ t:'39 · Corner frame', d:'Four corner brackets frame the cursor.' },
+    40:{ t:'40 · Hexagon', d:'Faceted hex outline. Technical and engineered.' },
+    41:{ t:'41 · Tick', d:'A single quiet vertical tick.' },
+    42:{ t:'42 · Slash', d:'Thin diagonal slash that flips on hover.' },
+    43:{ t:'43 · Underline', d:'Short underline that widens over links.' },
+    44:{ t:'44 · Bar', d:'Horizontal bar that extends on hover.' },
+    45:{ t:'45 · Notch', d:'Two opposing corner notches. Architectural.' },
+    46:{ t:'46 · Pillar', d:'Slim vertical bar. Discreet and refined.' },
+    47:{ t:'47 · Marker', d:'Solid square that scales up on hover.' },
+    48:{ t:'48 · Rotor', d:'Square outline that pivots 45° on hover.' },
+    49:{ t:'49 · Arrow', d:'Clean pointer that turns to face your movement.' },
+    50:{ t:'50 · Chevron', d:'Directional chevron that follows your path.' },
+    51:{ t:'51 · Needle', d:'Slim needle that orients to velocity.' },
+    52:{ t:'52 · Blade', d:'Thin blade aligned to the direction of travel.' },
+    53:{ t:'53 · Stretch', d:'Bar that stretches with cursor speed.' },
+    54:{ t:'54 · Skew tile', d:'Tile that skews with momentum, settles at rest.' },
+    55:{ t:'55 · Elastic', d:'Tile elongates toward fast movement.' },
+    56:{ t:'56 · Line', d:'Smooth continuous line trail.' },
+    57:{ t:'57 · Ribbon', d:'Tapering accent ribbon that follows the cursor.' },
+    58:{ t:'58 · Comet', d:'Thin fading tail behind the cursor.' },
+    59:{ t:'59 · Chain', d:'Linked squares that trail like a tail.' },
+    60:{ t:'60 · Thread', d:'Elastic thread that stretches to the cursor.' },
+    61:{ t:'61 · Reticle', d:'Square targeting brackets with a center mark.' },
+    62:{ t:'62 · Scan', d:'Horizontal scan line through the cursor.' },
+    63:{ t:'63 · Inspector', d:'Tag reads the type of element you hover.' },
+    64:{ t:'64 · Ruler', d:'Measuring ticks. Precise technical HUD.' },
+    65:{ t:'65 · Grid snap', d:'Cursor snaps to an invisible 40px grid.' },
+    66:{ t:'66 · Crosshair', d:'Thin full-screen guide lines. Blueprint.' },
+    67:{ t:'67 · Target lock', d:'Corner brackets close in on hover.' },
+    68:{ t:'68 · Soft square', d:'Soft square of light. Subtle and warm.' },
+    69:{ t:'69 · Spotlight', d:'Rectangular spotlight; the page dims around it.' },
+    70:{ t:'70 · Frame glow', d:'Glowing rounded frame. Premium SaaS feel.' },
+    71:{ t:'71 · Tint', d:'A gentle following tint. Barely there.' },
+    72:{ t:'72 · Magnet frame', d:'Outline wraps and sticks to hovered elements.' },
+    73:{ t:'73 · Highlight', d:'Soft highlight sweeps across hovered items.' },
+    74:{ t:'74 · Link underline', d:'Animated underline snaps to links.' },
+    75:{ t:'75 · Label tag', d:'Minimal tag shows the action word.' },
+    76:{ t:'76 · Status', d:'Status readout: LINK / BUTTON / TEXT.' },
+    77:{ t:'77 · Ratio', d:'Live viewport percentage readout.' },
+    78:{ t:'78 · Index', d:'Counts the interactive elements you hover.' },
+    79:{ t:'79 · Pulse', d:'Square with a soft, slow pulse.' },
+    80:{ t:'80 · Breathe', d:'Rounded square that gently breathes.' },
+    81:{ t:'81 · Precision', d:'Fine point inside a thin square ring.' },
+    82:{ t:'82 · Bracket dot', d:'A point with a single corner bracket.' },
+    83:{ t:'83 · Hairline', d:'A single hairline. The quietest option.' },
+    84:{ t:'84 · Morph', d:'Square that morphs into a line on hover.' }
+  };
+
+  // ===== ELEMENT REFS =====
+  const cursorEls = document.querySelectorAll('.cursor-el');
+  const buttons = document.querySelectorAll('.mode-list button');
+  const $ = id => document.getElementById(id);
+
+  // 1-14 (existing)
+  const c1Dot = $('cur1-dot'), c1Ring = $('cur1-ring');
+  let c1dx = mx, c1dy = my, c1rx = mx, c1ry = my;
+  const c2Blob = $('cur2-blob');
+  let c2x = mx, c2y = my;
+  const c3Dot = $('cur3-dot');
+  const c3Trail = document.querySelectorAll('.cur3-trail');
+  const trailPos = Array.from(c3Trail).map(() => ({ x: mx, y: my }));
+  let c3dx = mx, c3dy = my;
+  const c4Dot = $('cur4-dot'), c4Ring = $('cur4-ring');
+  let c4dx = mx, c4dy = my, c4rx = mx, c4ry = my;
+  const c5Blob = $('cur5-blob');
+  let c5x = mx, c5y = my;
+  const cur6 = $('cur6'), spotlight = $('spotlight');
+  let c6x = mx, c6y = my;
+  const cur7 = $('cur7'); let c7x = mx, c7y = my;
+  const cur8 = $('cur8'); let c8x = mx, c8y = my;
+  const cur9 = $('cur9'); let c9x = mx, c9y = my;
+  const cur10 = $('cur10'), c10Arrow = $('cur10-arrow');
+  let c10x = mx, c10y = my, c10angle = 0;
+  const cur11 = $('cur11'); let c11x = mx, c11y = my;
+  const cur12 = $('cur12'); let c12x = mx, c12y = my;
+  const cur13 = $('cur13'), c13H = $('cur13-h'), c13V = $('cur13-v');
+  const cur14 = $('cur14');
+
+  // CANVAS
+  const canvas = $('fx-canvas'), ctx = canvas.getContext('2d');
+  function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  let lastInkX = mx, lastInkY = my;
+
+  // 15. Snake
+  const cur15 = $('cur15'), cur15Wrap = $('cur15-wrap');
+  const c15Segs = document.querySelectorAll('.cur15-seg');
+  const c15Pos = Array.from(c15Segs).map(() => ({ x: mx, y: my }));
+  // 16. Metaball
+  const cur16 = $('cur16'), cur16Wrap = $('cur16-wrap');
+  const c16A = $('cur16-a'), c16B = $('cur16-b');
+  let c16ax = mx, c16ay = my, c16bx = mx, c16by = my;
+  // 17. RGB
+  const cur17 = $('cur17'), c17R = $('cur17-r'), c17G = $('cur17-g'), c17B = $('cur17-b');
+  let c17rx = mx, c17ry = my, c17gx = mx, c17gy = my, c17bx = mx, c17by = my;
+  // 18. Confetti — particles
+  const confetti = [];
+  const confettiColors = ['#ff3b30','#ffcc00','#34c759','#5ac8fa','#af52de','#ff9500','#c4ff3d'];
+  // 19. Smoke
+  const cur19 = $('cur19'), smokeContainer = $('cur19-particles');
+  const smokeParticles = [];
+  const SMOKE_MAX = 15;
+  for (let i = 0; i < SMOKE_MAX; i++) {
+    const el = document.createElement('div');
+    el.className = 'cur19-p';
+    smokeContainer.appendChild(el);
+    smokeParticles.push({ el, life: 0, x: mx, y: my });
+  }
+  let smokeIdx = 0, smokeFrame = 0;
+  // 20. Sketch
+  const cur20 = $('cur20'); let lastSketchX = mx, lastSketchY = my;
+  // 21. Speed lines
+  const cur21 = $('cur21'); const speedLines = [];
+  // 22. Coordinates
+  const cur22 = $('cur22'), c22Text = $('cur22-text');
+  // 23. Bouncy
+  const cur23 = $('cur23'); let c23x = mx, c23y = my, c23vx = 0, c23vy = 0;
+  // 24. Heart
+  const cur24 = $('cur24'); let c24x = mx, c24y = my;
+  // 25. Sparkle
+  const cur25 = $('cur25'); let c25x = mx, c25y = my;
+  // 26. Iris
+  const cur26 = $('cur26'); let c26x = mx, c26y = my;
+  // 27. Sun
+  const cur27 = $('cur27'), cur27Sun = $('cur27-sun');
+  let c27x = mx, c27y = my;
+  // Build sun rays
+  for (let i = 0; i < 12; i++) {
+    const ray = document.createElement('div');
+    ray.className = 'cur27-ray';
+    ray.style.transform = `rotate(${i * 30}deg) translateX(8px)`;
+    cur27Sun.appendChild(ray);
+  }
+  // 28. Hourglass
+  const cur28 = $('cur28'); let c28x = mx, c28y = my;
+  // 29. Gear
+  const cur29 = $('cur29'); let c29x = mx, c29y = my;
+  // 30. Aperture
+  const cur30 = $('cur30'); let c30x = mx, c30y = my;
+  // 31. Radar
+  const cur31 = $('cur31'); let c31x = mx, c31y = my;
+  // 32. Bubble
+  const cur32 = $('cur32'), c32Bub = $('cur32-bub');
+  let c32x = mx, c32y = my;
+  // 33. Poetry
+  const cur33 = $('cur33');
+  const poemWords = document.querySelectorAll('.cur33-w');
+  let c33x = mx, c33y = my, c33angle = 0;
+  // 34. Loading
+  const cur34 = $('cur34'); let c34x = mx, c34y = my;
+
+  // ============================================================
+  // ===== EXTENDED MODES 35–84 — geometric / professional =====
+  // ============================================================
+  const lerpN = (a, b, n) => (1 - n) * a + n * b;
+  const setTN = (el, x, y) => el.style.transform = `translate3d(${x}px,${y}px,0) translate(-50%,-50%)`;
+  const newState = {};
+  let currentHover = null, hoverIndex = 0;
+  function np(id, ease) {
+    let s = newState[id];
+    if (!s) s = newState[id] = { x: mx, y: my };
+    s.x = lerpN(s.x, mx, ease); s.y = lerpN(s.y, my, ease);
+    return s;
+  }
+  function follow(id, ease) { const s = np(id, ease || 0.3); setTN($('cur' + id), s.x, s.y); }
+  function tagAt(id, ease, ox, oy) { const s = np(id, ease || 0.3); $('cur' + id).style.transform = `translate3d(${s.x + ox}px,${s.y + oy}px,0)`; }
+  function dirAngle() { return Math.atan2(vy, vx) * 180 / Math.PI; }
+  function smartRect() { return currentHover ? currentHover.getBoundingClientRect() : null; }
+
+  // canvas trail buffers + thread state
+  const trailLine = [], trailRibbon = [], trailComet = [];
+  let threadX = mx, threadY = my;
+  function clearNewTrails() {
+    trailLine.length = 0; trailRibbon.length = 0; trailComet.length = 0;
+    threadX = mx; threadY = my; currentHover = null;
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // 59 — chain segments
+  const chainWrap = $('cur59-wrap'); const chainSegs = [];
+  if (chainWrap) for (let i = 0; i < 10; i++) {
+    const d = document.createElement('div'); d.className = 'cur59-seg';
+    chainWrap.appendChild(d); chainSegs.push({ el: d, x: mx, y: my });
+  }
+  // 64 — ruler ticks
+  const rulerWrap = $('cur64-wrap');
+  if (rulerWrap) for (let i = 0; i <= 6; i++) {
+    const t = document.createElement('i'); t.style.left = (i * 10) + 'px';
+    t.style.height = (i % 2 ? 4 : 7) + 'px'; rulerWrap.appendChild(t);
+  }
+
+  // 72/73/74 smart-frame state + text refs
+  const sf72 = { x: mx, y: my, w: 24, h: 24 };
+  const sf73 = { x: mx, y: my, w: 0, h: 0 };
+  const sf74 = { x: mx, y: my, w: 24 };
+  const c63Text = $('cur63-text'), c75Text = $('cur75-text'),
+        c76Text = $('cur76-text'), c77Text = $('cur77-text'), c78Text = $('cur78-text');
+
+  const newFrames = {
+    35:()=>follow(35,.3), 36:()=>follow(36,.3), 37:()=>follow(37,.4), 38:()=>follow(38,.35),
+    39:()=>follow(39,.3), 40:()=>follow(40,.3), 41:()=>follow(41,.4), 42:()=>follow(42,.35),
+    43:()=>follow(43,.35), 44:()=>follow(44,.35), 45:()=>follow(45,.3), 46:()=>follow(46,.35),
+    47:()=>follow(47,.3), 48:()=>follow(48,.3),
+    49:()=>{ follow(49,.4); if (Math.hypot(vx,vy)>1) $('cur49-arrow').style.transform=`rotate(${dirAngle()+90}deg)`; },
+    50:()=>{ follow(50,.4); if (Math.hypot(vx,vy)>1) $('cur50-ch').style.transform=`rotate(${dirAngle()}deg)`; },
+    51:()=>{ follow(51,.35); if (Math.hypot(vx,vy)>1) $('cur51-n').style.transform=`rotate(${dirAngle()+90}deg)`; },
+    52:()=>{ follow(52,.4); if (Math.hypot(vx,vy)>.5) $('cur52-b').style.transform=`rotate(${dirAngle()}deg)`; },
+    53:()=>{ follow(53,.3); const sp=Math.min(Math.hypot(vx,vy)/6,1); $('cur53-b').style.transform=`rotate(${dirAngle()}deg) scaleX(${1+sp*1.5}) scaleY(${1-sp*0.4})`; },
+    54:()=>{ follow(54,.25); const kx=Math.max(-.5,Math.min(.5,vx*0.03)), ky=Math.max(-.5,Math.min(.5,vy*0.03)); $('cur54-t').style.transform=`skew(${-kx*22}deg,${-ky*22}deg)`; },
+    55:()=>{ follow(55,.22); const sp=Math.min(Math.hypot(vx,vy)/7,1); $('cur55-t').style.transform=`rotate(${dirAngle()}deg) scaleX(${1+sp*2}) scaleY(${1-sp*0.45})`; },
+    56:()=>{ trailLine.push({x:mx,y:my}); if(trailLine.length>22)trailLine.shift(); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.strokeStyle='#fff'; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=2; ctx.beginPath(); trailLine.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.stroke(); follow(56,.5); },
+    57:()=>{ trailRibbon.push({x:mx,y:my}); if(trailRibbon.length>26)trailRibbon.shift(); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.lineCap='round'; for(let i=1;i<trailRibbon.length;i++){ const p=trailRibbon[i],q=trailRibbon[i-1],t=i/trailRibbon.length; ctx.strokeStyle='rgba(196,255,61,'+t+')'; ctx.lineWidth=t*10; ctx.beginPath(); ctx.moveTo(q.x,q.y); ctx.lineTo(p.x,p.y); ctx.stroke(); } follow(57,.5); },
+    58:()=>{ trailComet.push({x:mx,y:my,life:1}); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.strokeStyle='#fff'; ctx.lineCap='round'; for(let i=trailComet.length-1;i>0;i--){ const p=trailComet[i],q=trailComet[i-1]; p.life-=0.03; if(p.life<=0){trailComet.splice(i,1);continue;} ctx.globalAlpha=p.life; ctx.lineWidth=p.life*4; ctx.beginPath(); ctx.moveTo(q.x,q.y); ctx.lineTo(p.x,p.y); ctx.stroke(); } ctx.globalAlpha=1; follow(58,.6); },
+    59:()=>{ let lx=mx,ly=my; chainSegs.forEach((s,i)=>{ const e=0.45-i*0.03; s.x=lerpN(s.x,lx,e); s.y=lerpN(s.y,ly,e); s.el.style.transform=`translate(${s.x}px,${s.y}px) translate(-50%,-50%) rotate(45deg) scale(${1-i*0.07})`; s.el.style.opacity=1-i*0.08; lx=s.x; ly=s.y; }); },
+    60:()=>{ threadX=lerpN(threadX,mx,0.12); threadY=lerpN(threadY,my,0.12); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(threadX,threadY); ctx.lineTo(mx,my); ctx.stroke(); follow(60,.6); },
+    61:()=>follow(61,.35), 62:()=>follow(62,.4), 63:()=>follow(63,.35), 64:()=>follow(64,.4),
+    65:()=>{ const g=40, gx=Math.round(mx/g)*g, gy=Math.round(my/g)*g; let s=newState[65]||(newState[65]={x:gx,y:gy}); s.x=lerpN(s.x,gx,.3); s.y=lerpN(s.y,gy,.3); setTN($('cur65'),s.x,s.y); },
+    66:()=>{ $('cur66-h').style.top=my+'px'; $('cur66-v').style.left=mx+'px'; setTN($('cur66'),mx,my); },
+    67:()=>follow(67,.3),
+    68:()=>follow(68,.18), 69:()=>follow(69,.2), 70:()=>follow(70,.22), 71:()=>follow(71,.12),
+    72:()=>{ const r=smartRect(); const tx=r?r.left:mx-12, ty=r?r.top:my-12, tw=r?r.width:24, th=r?r.height:24; sf72.x=lerpN(sf72.x,tx,.25); sf72.y=lerpN(sf72.y,ty,.25); sf72.w=lerpN(sf72.w,tw,.25); sf72.h=lerpN(sf72.h,th,.25); const e=$('cur72'); e.style.transform='none'; e.style.left=sf72.x+'px'; e.style.top=sf72.y+'px'; e.style.width=sf72.w+'px'; e.style.height=sf72.h+'px'; },
+    73:()=>{ const r=smartRect(); const tx=r?r.left-4:mx, ty=r?r.top-2:my, tw=r?r.width+8:0, th=r?r.height+4:0; sf73.x=lerpN(sf73.x,tx,.3); sf73.y=lerpN(sf73.y,ty,.3); sf73.w=lerpN(sf73.w,tw,.3); sf73.h=lerpN(sf73.h,th,.3); const e=$('cur73'); e.style.transform='none'; e.style.left=sf73.x+'px'; e.style.top=sf73.y+'px'; e.style.width=sf73.w+'px'; e.style.height=sf73.h+'px'; },
+    74:()=>{ const r=smartRect(); const tx=r?r.left:mx-10, ty=r?r.bottom-1:my+14, tw=r?r.width:20; sf74.x=lerpN(sf74.x,tx,.3); sf74.y=lerpN(sf74.y,ty,.3); sf74.w=lerpN(sf74.w,tw,.3); const e=$('cur74'); e.style.transform='none'; e.style.left=sf74.x+'px'; e.style.top=sf74.y+'px'; e.style.width=sf74.w+'px'; },
+    75:()=>tagAt(75,.3,16,16), 76:()=>tagAt(76,.3,16,16),
+    77:()=>{ tagAt(77,.3,16,16); if(c77Text) c77Text.textContent=Math.round(mx/window.innerWidth*100)+'% · '+Math.round(my/window.innerHeight*100)+'%'; },
+    78:()=>tagAt(78,.3,16,16),
+    79:()=>follow(79,.25), 80:()=>follow(80,.25), 81:()=>follow(81,.5), 82:()=>follow(82,.4),
+    83:()=>follow(83,.45), 84:()=>follow(84,.3)
+  };
+
+  // ===== MODE SWITCHER =====
+  function setMode(n) {
+    activeMode = n;
+    body.className = body.className.replace(/mode-\d+/, '') + ' mode-' + n;
+    if (!body.classList.contains('cursor-active')) body.classList.add('cursor-active');
+    cursorEls.forEach(el => el.classList.remove('is-active'));
+    const el = $('cur' + n);
+    if (el) el.classList.add('is-active');
+    buttons.forEach(b => b.classList.toggle('active', +b.dataset.mode === n));
+    if (n !== 2) document.querySelectorAll('.magnetic').forEach(e => e.style.transform = '');
+    // clear canvas on mode change
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    confetti.length = 0;
+    speedLines.length = 0;
+    clearNewTrails();
+    $('info-title').textContent = modeInfo[n].t;
+    $('info-desc').textContent = modeInfo[n].d;
+    if (window.innerWidth <= 900) $('sidebar').classList.remove('open');
+  }
+  buttons.forEach(b => b.addEventListener('click', () => setMode(+b.dataset.mode)));
+  $('sidebar-toggle').addEventListener('click', () => $('sidebar').classList.toggle('open'));
+
+  // ===== MOUSE TRACK =====
+  let firstMove = true;
+  window.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    if (firstMove) {
+      firstMove = false;
+      [c1dx, c1rx, c2x, c3dx, c4dx, c4rx, c5x, c6x, c7x, c8x, c9x, c10x, c11x, c12x,
+       c16ax, c16bx, c17rx, c17gx, c17bx, c23x, c24x, c25x, c26x, c27x, c28x, c29x, c30x, c31x, c32x, c33x, c34x].fill && 0;
+      lastInkX = lastSketchX = mx; lastInkY = lastSketchY = my;
+    }
+  }, { passive: true });
+
+  // ===== HOVER =====
+  const hoverSel = 'a, button, [data-cursor]';
+  document.addEventListener('mouseover', e => {
+    const t = e.target.closest(hoverSel);
+    if (t) {
+      body.classList.add('cursor-hover');
+      const label = t.dataset.cursor || (t.tagName === 'BUTTON' ? 'Click' : 'View');
+      $('cur1-label').textContent = label;
+      c32Bub.textContent = label;
+      // extended modes 35–84
+      currentHover = t;
+      const kind = t.tagName === 'A' ? 'LINK' : t.tagName === 'BUTTON' ? 'BUTTON' : 'TEXT';
+      if (c75Text) c75Text.textContent = label;
+      if (c63Text) c63Text.textContent = kind;
+      if (c76Text) c76Text.textContent = kind;
+      hoverIndex++;
+      if (c78Text) c78Text.textContent = String(hoverIndex).padStart(3, '0');
+    }
+  });
+  document.addEventListener('mouseout', e => {
+    const t = e.target.closest(hoverSel);
+    if (t) { body.classList.remove('cursor-hover'); currentHover = null; }
+  });
+
+  // ===== MAGNETIC =====
+  const magneticEls = document.querySelectorAll('.magnetic');
+  function updateMagnetic() {
+    if (activeMode !== 2) return;
+    magneticEls.forEach(el => {
+      const r = el.getBoundingClientRect();
+      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      const dx = mx - cx, dy = my - cy, dist = Math.hypot(dx, dy);
+      const radius = Math.max(r.width, r.height) * 0.8 + 60;
+      if (dist < radius) {
+        const pull = (1 - dist / radius) * 0.35;
+        el.style.transform = `translate(${dx * pull}px, ${dy * pull}px)`;
+      } else el.style.transform = '';
+    });
+  }
+
+  // ===== HELPERS =====
+  const lerp = (a, b, n) => (1 - n) * a + n * b;
+  const setT = (el, x, y) => el.style.transform = `translate3d(${x}px,${y}px,0) translate(-50%,-50%)`;
+  const setT0 = (el, x, y) => el.style.transform = `translate3d(${x}px,${y}px,0)`;
+
+  // ===== TICK =====
+  function tick() {
+    vx = mx - lastMx; vy = my - lastMy;
+    lastMx = mx; lastMy = my;
+    const speed = Math.hypot(vx, vy);
+
+    // 1
+    c1dx = lerp(c1dx, mx, 0.5); c1dy = lerp(c1dy, my, 0.5);
+    c1rx = lerp(c1rx, mx, 0.18); c1ry = lerp(c1ry, my, 0.18);
+    setT(c1Dot, c1dx, c1dy); setT(c1Ring, c1rx, c1ry);
+
+    // 2
+    c2x = lerp(c2x, mx, 0.25); c2y = lerp(c2y, my, 0.25);
+    setT(c2Blob, c2x, c2y); updateMagnetic();
+
+    // 3
+    c3dx = lerp(c3dx, mx, 0.45); c3dy = lerp(c3dy, my, 0.45);
+    setT(c3Dot, c3dx, c3dy);
+    let px = c3dx, py = c3dy;
+    trailPos.forEach((p, i) => {
+      const ease = 0.32 - i * 0.03;
+      p.x = lerp(p.x, px, ease); p.y = lerp(p.y, py, ease);
+      const sc = 1 - i * 0.13;
+      c3Trail[i].style.transform = `translate3d(${p.x}px,${p.y}px,0) translate(-50%,-50%) scale(${sc})`;
+      c3Trail[i].style.opacity = 1 - i * 0.13;
+      px = p.x; py = p.y;
+    });
+
+    // 4
+    c4dx = lerp(c4dx, mx, 0.5); c4dy = lerp(c4dy, my, 0.5);
+    c4rx = lerp(c4rx, mx, 0.18); c4ry = lerp(c4ry, my, 0.18);
+    setT(c4Dot, c4dx, c4dy); setT(c4Ring, c4rx, c4ry);
+
+    // 5
+    c5x = lerp(c5x, mx, 0.25); c5y = lerp(c5y, my, 0.25);
+    const sp5 = Math.min(speed / 6, 1);
+    const ang5 = Math.atan2(vy, vx) * 180 / Math.PI;
+    c5Blob.style.transform = `rotate(${ang5}deg) scale(${1 + sp5 * 0.8}, ${1 - sp5 * 0.35})`;
+    setT0($('cur5'), c5x, c5y);
+    $('cur5').style.transform = `translate3d(${c5x}px,${c5y}px,0) translate(-50%,-50%)`;
+
+    // 6
+    c6x = lerp(c6x, mx, 0.4); c6y = lerp(c6y, my, 0.4);
+    spotlight.style.background = `radial-gradient(circle 140px at ${c6x}px ${c6y}px, transparent 0%, transparent 65%, rgba(10,10,10,0.92) 100%)`;
+    setT(cur6, c6x, c6y);
+
+    // 7
+    c7x = lerp(c7x, mx, 0.4); c7y = lerp(c7y, my, 0.4);
+    setT(cur7, c7x, c7y);
+
+    // 8
+    c8x = lerp(c8x, mx, 0.2); c8y = lerp(c8y, my, 0.2);
+    setT(cur8, c8x, c8y);
+
+    // 9
+    c9x = lerp(c9x, mx, 0.3); c9y = lerp(c9y, my, 0.3);
+    setT(cur9, c9x, c9y);
+
+    // 10
+    c10x = lerp(c10x, mx, 0.4); c10y = lerp(c10y, my, 0.4);
+    setT(cur10, c10x, c10y);
+    if (speed > 1) c10angle = Math.atan2(vy, vx) * 180 / Math.PI + 90;
+    c10Arrow.style.transform = `rotate(${c10angle}deg)`;
+
+    // 11
+    c11x = lerp(c11x, mx, 0.3); c11y = lerp(c11y, my, 0.3);
+    setT(cur11, c11x, c11y);
+
+    // 12
+    c12x = lerp(c12x, mx, 0.4); c12y = lerp(c12y, my, 0.4);
+    setT0(cur12, c12x, c12y);
+
+    // 13
+    if (activeMode === 13) {
+      c13H.style.top = my + 'px'; c13V.style.left = mx + 'px';
+      setT(cur13, mx, my);
+    }
+
+    // 14 — Ink
+    if (activeMode === 14) {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fillStyle = 'rgba(0,0,0,0.04)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(lastInkX, lastInkY); ctx.lineTo(mx, my); ctx.stroke();
+      lastInkX = mx; lastInkY = my;
+      setT(cur14, mx, my);
+    } else { lastInkX = mx; lastInkY = my; }
+
+    // 15 — Snake (segments chain)
+    if (activeMode === 15) {
+      let lpx = mx, lpy = my;
+      c15Pos.forEach((p, i) => {
+        const ease = 0.4 - i * 0.025;
+        p.x = lerp(p.x, lpx, ease); p.y = lerp(p.y, lpy, ease);
+        c15Segs[i].style.transform = `translate(${p.x}px,${p.y}px)`;
+        lpx = p.x; lpy = p.y;
+      });
+    }
+
+    // 16 — Metaball
+    if (activeMode === 16) {
+      c16ax = lerp(c16ax, mx, 0.45); c16ay = lerp(c16ay, my, 0.45);
+      const dx = (mx + Math.sin(Date.now()/600)*22) - c16bx;
+      const dy = (my + Math.cos(Date.now()/600)*22) - c16by;
+      c16bx += dx * 0.12; c16by += dy * 0.12;
+      c16A.style.transform = `translate(${c16ax}px,${c16ay}px) translate(-50%,-50%)`;
+      c16B.style.transform = `translate(${c16bx}px,${c16by}px) translate(-50%,-50%)`;
+    }
+
+    // 17 — RGB Glitch (channels offset by velocity)
+    if (activeMode === 17) {
+      const offset = Math.min(speed * 0.6, 16);
+      const ang = Math.atan2(vy, vx);
+      c17rx = lerp(c17rx, mx + Math.cos(ang) * offset, 0.5);
+      c17ry = lerp(c17ry, my + Math.sin(ang) * offset, 0.5);
+      c17gx = lerp(c17gx, mx, 0.5); c17gy = lerp(c17gy, my, 0.5);
+      c17bx = lerp(c17bx, mx - Math.cos(ang) * offset, 0.5);
+      c17by = lerp(c17by, my - Math.sin(ang) * offset, 0.5);
+      c17R.style.transform = `translate(${c17rx}px,${c17ry}px) translate(-50%,-50%)`;
+      c17G.style.transform = `translate(${c17gx}px,${c17gy}px) translate(-50%,-50%)`;
+      c17B.style.transform = `translate(${c17bx}px,${c17by}px) translate(-50%,-50%)`;
+    }
+
+    // 18 — Confetti (emit + physics)
+    if (activeMode === 18) {
+      // emit
+      if (speed > 0.5) {
+        for (let i = 0; i < 2; i++) {
+          confetti.push({
+            x: mx, y: my,
+            vx: (Math.random() - 0.5) * 4,
+            vy: (Math.random() - 2.5) * 2,
+            color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+            size: Math.random() * 4 + 2,
+            life: 1,
+            rot: Math.random() * Math.PI * 2,
+            vrot: (Math.random() - 0.5) * 0.3
+          });
+        }
+      }
+      // update + draw
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      for (let i = confetti.length - 1; i >= 0; i--) {
+        const p = confetti[i];
+        p.vy += 0.12; p.x += p.vx; p.y += p.vy;
+        p.rot += p.vrot; p.life -= 0.012;
+        if (p.life <= 0) { confetti.splice(i, 1); continue; }
+        ctx.save(); ctx.globalAlpha = p.life;
+        ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size * 1.6);
+        ctx.restore();
+      }
+      // cap
+      if (confetti.length > 250) confetti.splice(0, confetti.length - 250);
+    }
+
+    // 19 — Smoke
+    if (activeMode === 19) {
+      smokeFrame++;
+      if (smokeFrame % 3 === 0) {
+        const p = smokeParticles[smokeIdx];
+        p.x = mx + (Math.random() - 0.5) * 10;
+        p.y = my + (Math.random() - 0.5) * 10;
+        p.life = 1;
+        smokeIdx = (smokeIdx + 1) % SMOKE_MAX;
+      }
+      smokeParticles.forEach(p => {
+        if (p.life > 0) {
+          p.life -= 0.025; p.y -= 1.5;
+          const sc = 1 + (1 - p.life) * 2.5;
+          p.el.style.opacity = p.life * 0.5;
+          p.el.style.transform = `translate(${p.x}px,${p.y}px) translate(-50%,-50%) scale(${sc})`;
+        } else { p.el.style.opacity = 0; }
+      });
+      setT0(cur19.querySelector('.cur19-dot'), mx, my);
+      cur19.querySelector('.cur19-dot').style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
+    }
+
+    // 20 — Sketch (scratchy pencil)
+    if (activeMode === 20) {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fillStyle = 'rgba(0,0,0,0.015)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = '#ffffff';
+      const w = Math.min(0.5 + speed * 0.15, 3);
+      // multiple slightly offset lines = scratchy
+      for (let i = 0; i < 3; i++) {
+        const ox = (Math.random() - 0.5) * 1.5;
+        const oy = (Math.random() - 0.5) * 1.5;
+        ctx.lineWidth = w; ctx.globalAlpha = 0.3 + Math.random() * 0.3;
+        ctx.beginPath();
+        ctx.moveTo(lastSketchX + ox, lastSketchY + oy);
+        ctx.lineTo(mx + ox, my + oy);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      lastSketchX = mx; lastSketchY = my;
+      setT(cur20, mx, my);
+    } else { lastSketchX = mx; lastSketchY = my; }
+
+    // 21 — Speed lines
+    if (activeMode === 21) {
+      if (speed > 2) {
+        const ang = Math.atan2(vy, vx);
+        for (let i = 0; i < 2; i++) {
+          speedLines.push({
+            x: mx + (Math.random() - 0.5) * 30,
+            y: my + (Math.random() - 0.5) * 30,
+            ang: ang + Math.PI + (Math.random() - 0.5) * 0.3,
+            len: 20 + Math.random() * 40,
+            life: 1
+          });
+        }
+      }
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1;
+      for (let i = speedLines.length - 1; i >= 0; i--) {
+        const l = speedLines[i];
+        l.life -= 0.04;
+        if (l.life <= 0) { speedLines.splice(i, 1); continue; }
+        ctx.globalAlpha = l.life;
+        ctx.beginPath();
+        ctx.moveTo(l.x, l.y);
+        ctx.lineTo(l.x + Math.cos(l.ang) * l.len * l.life, l.y + Math.sin(l.ang) * l.len * l.life);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // 22 — Coordinates
+    if (activeMode === 22) {
+      c22Text.textContent = `${Math.round(mx)}, ${Math.round(my)}`;
+      cur22.style.transform = `translate3d(${mx + 24}px,${my + 4}px,0)`;
+    }
+
+    // 23 — Bouncy
+    if (activeMode === 23) {
+      c23vx += (mx - c23x) * 0.08; c23vy += (my - c23y) * 0.08;
+      c23vx *= 0.85; c23vy *= 0.85;
+      c23x += c23vx; c23y += c23vy;
+      setT(cur23, c23x, c23y);
+    }
+
+    // 24 — Heart
+    if (activeMode === 24) {
+      c24x = lerp(c24x, mx, 0.3); c24y = lerp(c24y, my, 0.3);
+      setT(cur24, c24x, c24y);
+    }
+    // 25 — Sparkle
+    if (activeMode === 25) {
+      c25x = lerp(c25x, mx, 0.3); c25y = lerp(c25y, my, 0.3);
+      setT(cur25, c25x, c25y);
+    }
+    // 26 — Iris
+    if (activeMode === 26) {
+      c26x = lerp(c26x, mx, 0.35); c26y = lerp(c26y, my, 0.35);
+      setT(cur26, c26x, c26y);
+    }
+    // 27 — Sun
+    if (activeMode === 27) {
+      c27x = lerp(c27x, mx, 0.25); c27y = lerp(c27y, my, 0.25);
+      setT(cur27, c27x, c27y);
+    }
+    // 28 — Hourglass
+    if (activeMode === 28) {
+      c28x = lerp(c28x, mx, 0.3); c28y = lerp(c28y, my, 0.3);
+      setT(cur28, c28x, c28y);
+    }
+    // 29 — Gear
+    if (activeMode === 29) {
+      c29x = lerp(c29x, mx, 0.3); c29y = lerp(c29y, my, 0.3);
+      setT(cur29, c29x, c29y);
+    }
+    // 30 — Aperture
+    if (activeMode === 30) {
+      c30x = lerp(c30x, mx, 0.3); c30y = lerp(c30y, my, 0.3);
+      setT(cur30, c30x, c30y);
+    }
+    // 31 — Radar
+    if (activeMode === 31) {
+      c31x = lerp(c31x, mx, 0.3); c31y = lerp(c31y, my, 0.3);
+      setT(cur31, c31x, c31y);
+    }
+    // 32 — Bubble
+    if (activeMode === 32) {
+      c32x = lerp(c32x, mx, 0.3); c32y = lerp(c32y, my, 0.3);
+      cur32.style.transform = `translate3d(${c32x + 16}px,${c32y - 36}px,0)`;
+    }
+    // 33 — Poetry (orbit)
+    if (activeMode === 33) {
+      c33x = lerp(c33x, mx, 0.2); c33y = lerp(c33y, my, 0.2);
+      c33angle += 0.012;
+      setT0(cur33, c33x, c33y);
+      poemWords.forEach((w, i) => {
+        const a = c33angle + (i * Math.PI * 2 / poemWords.length);
+        const r = 60 + Math.sin(c33angle * 2 + i) * 8;
+        w.style.transform = `translate(${Math.cos(a) * r}px, ${Math.sin(a) * r}px)`;
+      });
+    }
+    // 34 — Loading
+    if (activeMode === 34) {
+      c34x = lerp(c34x, mx, 0.3); c34y = lerp(c34y, my, 0.3);
+      setT(cur34, c34x, c34y);
+    }
+
+    // 35–84 — extended geometric / professional modes (only active one runs)
+    if (activeMode >= 35) { const f = newFrames[activeMode]; if (f) f(); }
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
