@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Cursor Studies — RD Demo / 84 modes</title>
+<title>Cursor Studies — RD Demo / 100 modes</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -624,6 +624,128 @@ body.mode-83.cursor-hover .cur83{height:30px;}
 .cur84{width:22px;height:22px;border:1.5px solid var(--cursor);mix-blend-mode:difference;transition:width .35s var(--ease),height .35s var(--ease),border-radius .35s var(--ease),background .35s var(--ease);}
 body.mode-84.cursor-hover .cur84{width:60px;height:2px;border-radius:2px;background:var(--cursor);}
 
+/* ============================================================ */
+/* ===== HOVER REACTIONS — every motion/trail/HUD mode now ==== */
+/* ===== visibly responds on hover (was missing before) ====== */
+/* ============================================================ */
+/* keep JS-driven transform AND animate the new size/colour hovers */
+.cur49,.cur50,.cur51,.cur52 { transition: transform .12s linear, width .3s var(--ease), height .3s var(--ease), background .3s var(--ease), fill .3s var(--ease), stroke .3s var(--ease); }
+.cur53,.cur55,.cur62,.cur64,.cur65,.cur69,.cur71,.cur79,.cur80,.cur82,
+.cur56-d,.cur57-d,.cur58-d,.cur60-d,.cur59-seg,.cur66 { transition: width .3s var(--ease), height .3s var(--ease), background .3s var(--ease), border-color .3s var(--ease), box-shadow .3s var(--ease); }
+.cur66-h,.cur66-v { transition: opacity .3s var(--ease), background .3s var(--ease); }
+.cur63::before,.cur63::after,.cur64::before,.cur64 i,.cur62::before,.cur62 i { transition: background .3s var(--ease), border-color .3s var(--ease); }
+
+body.mode-49.cursor-hover .cur49 { width: 34px; height: 34px; }
+body.mode-49.cursor-hover .cur49 svg { fill: var(--accent); }
+body.mode-50.cursor-hover .cur50 { width: 32px; height: 32px; }
+body.mode-50.cursor-hover .cur50 svg { stroke: var(--accent); }
+body.mode-51.cursor-hover .cur51 { width: 16px; height: 46px; }
+body.mode-51.cursor-hover .cur51 svg { fill: var(--accent); }
+body.mode-52.cursor-hover .cur52 { width: 54px; background: var(--accent); }
+body.mode-53.cursor-hover .cur53 { height: 12px; background: var(--accent); }
+body.mode-54.cursor-hover .cur54 { background: var(--accent); }
+body.mode-55.cursor-hover .cur55 { height: 14px; background: var(--accent); }
+body.mode-56.cursor-hover .cur56-d, body.mode-58.cursor-hover .cur58-d, body.mode-60.cursor-hover .cur60-d { width: 12px; height: 12px; }
+body.mode-57.cursor-hover .cur57-d { width: 12px; height: 12px; }
+body.mode-59.cursor-hover .cur59-seg { background: var(--accent); }
+body.mode-62.cursor-hover .cur62 { width: 74px; }
+body.mode-62.cursor-hover .cur62::before, body.mode-62.cursor-hover .cur62 i { background: var(--accent); border-color: var(--accent); }
+body.mode-63.cursor-hover .cur63::before, body.mode-63.cursor-hover .cur63::after { background: var(--accent); }
+body.mode-63.cursor-hover .cur63 .cur-tag { border-color: var(--accent); color: var(--accent); }
+body.mode-64.cursor-hover .cur64 { width: 78px; }
+body.mode-64.cursor-hover .cur64::before, body.mode-64.cursor-hover .cur64 i { background: var(--accent); }
+body.mode-65.cursor-hover .cur65 { width: 22px; height: 22px; background: rgba(196,255,61,.22); }
+body.mode-66.cursor-hover .cur66-h, body.mode-66.cursor-hover .cur66-v { opacity: .6; background: var(--accent); }
+body.mode-66.cursor-hover .cur66 { width: 16px; height: 16px; border-color: var(--accent); }
+body.mode-69.cursor-hover .cur69 { width: 180px; height: 116px; box-shadow: 0 0 0 9999px rgba(10,10,10,.92); }
+body.mode-71.cursor-hover .cur71 { width: 220px; height: 220px; }
+body.mode-79.cursor-hover .cur79 { border-color: var(--accent); }
+body.mode-80.cursor-hover .cur80 { border-color: var(--accent); }
+body.mode-82.cursor-hover .cur82 { width: 28px; height: 28px; }
+body.mode-82.cursor-hover .cur82::after { border-color: var(--accent); }
+
+/* ============================================================ */
+/* ===== BOLD ARROW PACK — modes 85–100 (non-round) ========== */
+/* ============================================================ */
+.cur85,.cur86,.cur87,.cur88,.cur89,.cur90,.cur91,.cur92,.cur93,.cur94,.cur95,.cur96,.cur97,.cur98,.cur99,.cur100 { mix-blend-mode: difference; }
+.cur85 svg,.cur86 svg,.cur87 svg,.cur88 svg,.cur90 svg,.cur91 svg,.cur93 svg,.cur99 svg,.cur100 svg { width:100%; height:100%; display:block; fill: var(--cursor); }
+.cur89 svg,.cur94 svg,.cur95 svg,.cur96 svg,.cur97 svg { width:100%; height:100%; display:block; fill:none; stroke: var(--cursor); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+/* 85 Arrow Bold */
+.cur85 { width:26px; height:26px; transition: width .3s var(--ease), height .3s var(--ease); }
+body.mode-85.cursor-hover .cur85 { width:38px; height:38px; }
+body.mode-85.cursor-hover .cur85 svg { fill: var(--accent); }
+/* 86 Arrow Pro (classic pointer) */
+.cur86 { width:24px; height:24px; transition: transform .25s var(--ease); }
+.cur86 svg { width:100%; height:100%; display:block; fill: var(--cursor); stroke: var(--bg); stroke-width:1; }
+body.mode-86.cursor-hover .cur86 { transform: scale(1.35); }
+body.mode-86.cursor-hover .cur86 svg { fill: var(--accent); }
+/* 87 Nav Arrow */
+.cur87 { width:24px; height:24px; transition: width .3s var(--ease), height .3s var(--ease); }
+body.mode-87.cursor-hover .cur87 { width:34px; height:34px; }
+body.mode-87.cursor-hover .cur87 svg { fill: var(--accent); }
+/* 88 Block Arrow */
+.cur88 { width:30px; height:24px; transition: width .3s var(--ease), height .3s var(--ease); }
+body.mode-88.cursor-hover .cur88 { width:42px; height:34px; }
+body.mode-88.cursor-hover .cur88 svg { fill: var(--accent); }
+/* 89 Double Chevron */
+.cur89 { width:24px; height:24px; transition: width .3s var(--ease); }
+body.mode-89.cursor-hover .cur89 { width:34px; }
+body.mode-89.cursor-hover .cur89 svg { stroke: var(--accent); }
+/* 90 Triangle */
+.cur90 { width:24px; height:24px; transition: width .3s var(--ease), height .3s var(--ease); }
+body.mode-90.cursor-hover .cur90 { width:34px; height:34px; }
+body.mode-90.cursor-hover .cur90 svg { fill: var(--accent); }
+/* 91 Long Arrow */
+.cur91 { width:40px; height:14px; transition: width .3s var(--ease); }
+body.mode-91.cursor-hover .cur91 { width:58px; }
+body.mode-91.cursor-hover .cur91 svg { fill: var(--accent); }
+/* 92 Arrow Box */
+.cur92 { width:34px; height:34px; border:2px solid var(--cursor); display:flex; align-items:center; justify-content:center; transition: background .3s var(--ease); }
+.cur92 svg { width:18px; height:18px; display:block; fill:none; stroke:var(--cursor); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+body.mode-92.cursor-hover .cur92 { background: var(--cursor); }
+body.mode-92.cursor-hover .cur92 svg { stroke: var(--bg); }
+/* 93 Send */
+.cur93 { width:26px; height:26px; transition: width .3s var(--ease), height .3s var(--ease); }
+body.mode-93.cursor-hover .cur93 { width:34px; height:34px; }
+body.mode-93.cursor-hover .cur93 svg { fill: var(--accent); }
+/* 94 Resize H */
+.cur94 { width:34px; height:18px; transition: width .3s var(--ease); }
+body.mode-94.cursor-hover .cur94 { width:48px; }
+body.mode-94.cursor-hover .cur94 svg { stroke: var(--accent); }
+/* 95 Move (4-way) */
+.cur95 { width:30px; height:30px; transition: width .3s var(--ease), height .3s var(--ease); }
+body.mode-95.cursor-hover .cur95 { width:40px; height:40px; }
+body.mode-95.cursor-hover .cur95 svg { stroke: var(--accent); }
+/* 96 Caret Up */
+.cur96 { width:26px; height:20px; transition: width .3s var(--ease); }
+body.mode-96.cursor-hover .cur96 { width:38px; }
+body.mode-96.cursor-hover .cur96 svg { stroke: var(--accent); }
+/* 97 Return */
+.cur97 { width:26px; height:24px; transition: transform .3s var(--ease); }
+body.mode-97.cursor-hover .cur97 { transform: translateX(-3px); }
+body.mode-97.cursor-hover .cur97 svg { stroke: var(--accent); }
+/* 98 Crosshair Bold */
+.cur98 { position:relative; width:28px; height:28px; transition: width .3s var(--ease), height .3s var(--ease); }
+.cur98::before,.cur98::after { content:''; position:absolute; background: var(--cursor); }
+.cur98::before { left:50%; top:0; bottom:0; width:3px; transform:translateX(-50%); }
+.cur98::after { top:50%; left:0; right:0; height:3px; transform:translateY(-50%); }
+.cur98 b { position:absolute; top:50%; left:50%; width:8px; height:8px; background:var(--cursor); transform:translate(-50%,-50%); }
+body.mode-98.cursor-hover .cur98 { width:42px; height:42px; }
+body.mode-98.cursor-hover .cur98::before, body.mode-98.cursor-hover .cur98::after, body.mode-98.cursor-hover .cur98 b { background: var(--accent); }
+/* 99 Pointer Tag */
+.cur99 { position:relative; width:24px; height:24px; }
+.cur99 .cur-tag { position:absolute; left:20px; top:-4px; background:var(--accent); color:var(--bg); border-color:var(--accent); mix-blend-mode:normal; }
+body.mode-99.cursor-hover .cur99 svg { fill: var(--accent); }
+/* 100 Target Arrow */
+.cur100 { position:relative; width:44px; height:44px; transition: width .3s var(--ease), height .3s var(--ease); }
+.cur100 svg { position:absolute; inset:0; margin:auto; width:18px; height:18px; }
+.cur100 span { position:absolute; width:10px; height:10px; border:2px solid var(--accent); }
+.cur100 .tl{top:0;left:0;border-right:none;border-bottom:none;}
+.cur100 .tr{top:0;right:0;border-left:none;border-bottom:none;}
+.cur100 .bl{bottom:0;left:0;border-right:none;border-top:none;}
+.cur100 .br{bottom:0;right:0;border-left:none;border-top:none;}
+body.mode-100.cursor-hover .cur100 { width:60px; height:60px; }
+
 /* ====== MOBILE ====== */
 @media (max-width: 900px) {
   :root { --sidebar: 0px; }
@@ -866,12 +988,30 @@ body.mode-84.cursor-hover .cur84{width:60px;height:2px;border-radius:2px;backgro
 <div class="cursor-el" id="cur83"><div class="cur83"></div></div>
 <div class="cursor-el" id="cur84"><div class="cur84"></div></div>
 
+<!-- ============ BOLD ARROW PACK 85–100 ============ -->
+<div class="cursor-el" id="cur85"><div class="cur85" id="cur85-a"><svg viewBox="0 0 24 24"><polygon points="12,2 23,20 12,15 1,20"/></svg></div></div>
+<div class="cursor-el" id="cur86"><div class="cur86"><svg viewBox="0 0 24 24"><path d="M5 2 L5 20 L9.5 15.5 L12.5 21.5 L15 20.4 L12 14.4 L18.5 14 Z"/></svg></div></div>
+<div class="cursor-el" id="cur87"><div class="cur87" id="cur87-a"><svg viewBox="0 0 24 24"><polygon points="12,2 19,22 12,17 5,22"/></svg></div></div>
+<div class="cursor-el" id="cur88"><div class="cur88" id="cur88-a"><svg viewBox="0 0 30 24"><polygon points="2,8 16,8 16,3 28,12 16,21 16,16 2,16"/></svg></div></div>
+<div class="cursor-el" id="cur89"><div class="cur89" id="cur89-a"><svg viewBox="0 0 24 24"><path d="M4 5 L11 12 L4 19 M12 5 L19 12 L12 19"/></svg></div></div>
+<div class="cursor-el" id="cur90"><div class="cur90" id="cur90-a"><svg viewBox="0 0 24 24"><polygon points="12,3 21,20 3,20"/></svg></div></div>
+<div class="cursor-el" id="cur91"><div class="cur91" id="cur91-a"><svg viewBox="0 0 40 14"><path d="M0 5 L28 5 L28 1 L40 7 L28 13 L28 9 L0 9 Z"/></svg></div></div>
+<div class="cursor-el" id="cur92"><div class="cur92"><svg viewBox="0 0 24 24"><path d="M7 17 L17 7 M10.5 7 L17 7 L17 13.5"/></svg></div></div>
+<div class="cursor-el" id="cur93"><div class="cur93" id="cur93-a"><svg viewBox="0 0 24 24"><path d="M2 3 L22 12 L2 21 L6 12 Z"/></svg></div></div>
+<div class="cursor-el" id="cur94"><div class="cur94"><svg viewBox="0 0 34 18"><path d="M9 4 L3 9 L9 14 M3 9 L31 9 M25 4 L31 9 L25 14"/></svg></div></div>
+<div class="cursor-el" id="cur95"><div class="cur95"><svg viewBox="0 0 30 30"><path d="M15 2 L11 6 M15 2 L19 6 M15 2 L15 28 M15 28 L11 24 M15 28 L19 24 M2 15 L6 11 M2 15 L6 19 M2 15 L28 15 M28 15 L24 11 M28 15 L24 19"/></svg></div></div>
+<div class="cursor-el" id="cur96"><div class="cur96" id="cur96-a"><svg viewBox="0 0 26 20"><path d="M4 15 L13 6 L22 15"/></svg></div></div>
+<div class="cursor-el" id="cur97"><div class="cur97"><svg viewBox="0 0 26 24"><path d="M21 5 L21 12 L7 12 M11 8 L7 12 L11 16"/></svg></div></div>
+<div class="cursor-el" id="cur98"><div class="cur98"><b></b></div></div>
+<div class="cursor-el" id="cur99"><div class="cur99"><svg viewBox="0 0 24 24"><polygon points="12,2 22,22 12,16 2,22"/></svg><span class="cur-tag" id="cur99-text">Go</span></div></div>
+<div class="cursor-el" id="cur100"><div class="cur100"><span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span><svg id="cur100-a" viewBox="0 0 18 18"><polygon points="9,1 16,15 9,11 2,15"/></svg></div></div>
+
 <!-- ===== SIDEBAR ===== -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <div>
       <h2>Cursor <em>Studies</em></h2>
-      <span>RD / Demo · 84 modes</span>
+      <span>RD / Demo · 100 modes</span>
     </div>
     <button class="sidebar-toggle" id="sidebar-toggle">Pick</button>
   </div>
@@ -1007,6 +1147,25 @@ body.mode-84.cursor-hover .cur84{width:60px;height:2px;border-radius:2px;backgro
     <li><button data-mode="81"><span class="num">81</span> Precision</button></li>
     <li><button data-mode="82"><span class="num">82</span> Bracket dot</button></li>
   </ul>
+  <div class="mode-section">Bold arrows · NEW</div>
+  <ul class="mode-list">
+    <li><button data-mode="85"><span class="num">85</span> Arrow bold</button></li>
+    <li><button data-mode="86"><span class="num">86</span> Arrow pro (classic)</button></li>
+    <li><button data-mode="87"><span class="num">87</span> Nav arrow</button></li>
+    <li><button data-mode="88"><span class="num">88</span> Block arrow</button></li>
+    <li><button data-mode="89"><span class="num">89</span> Double chevron</button></li>
+    <li><button data-mode="90"><span class="num">90</span> Triangle</button></li>
+    <li><button data-mode="91"><span class="num">91</span> Long arrow</button></li>
+    <li><button data-mode="92"><span class="num">92</span> Arrow box</button></li>
+    <li><button data-mode="93"><span class="num">93</span> Send</button></li>
+    <li><button data-mode="94"><span class="num">94</span> Resize ↔</button></li>
+    <li><button data-mode="95"><span class="num">95</span> Move (4-way)</button></li>
+    <li><button data-mode="96"><span class="num">96</span> Caret up</button></li>
+    <li><button data-mode="97"><span class="num">97</span> Return ↵</button></li>
+    <li><button data-mode="98"><span class="num">98</span> Crosshair bold</button></li>
+    <li><button data-mode="99"><span class="num">99</span> Pointer tag</button></li>
+    <li><button data-mode="100"><span class="num">100</span> Target arrow</button></li>
+  </ul>
   <div class="sidebar-info">
     <strong id="info-title">01 · Label</strong>
     <p id="info-desc">Ring expands on hover and reveals a contextual label. Editorial / agency feel.</p>
@@ -1016,9 +1175,9 @@ body.mode-84.cursor-hover .cur84{width:60px;height:2px;border-radius:2px;backgro
 <!-- ===== MAIN ===== -->
 <div class="main">
   <section class="hero">
-    <div class="eyebrow">Cursor study — 84 directions</div>
+    <div class="eyebrow">Cursor study — 100 directions</div>
     <h1>Move, <em>hover</em>, switch. Pick the one that feels right.</h1>
-    <p>All eighty-four modes run on the same page. Choose from the left rail — grouped by character. Hover the buttons, cards, inline links and footer to feel each one. Modes 35+ are non-round and tuned for business sites.</p>
+    <p>All one hundred modes run on the same page. Choose from the left rail — grouped by character. Hover the buttons, cards, inline links and footer to feel each one — every mode now reacts on hover. Modes 35+ are non-round and tuned for business sites.</p>
     <div class="btn-row">
       <a href="#cards" class="btn magnetic" data-cursor="Explore">
         View the work
@@ -1153,7 +1312,23 @@ body.mode-84.cursor-hover .cur84{width:60px;height:2px;border-radius:2px;backgro
     81:{ t:'81 · Precision', d:'Fine point inside a thin square ring.' },
     82:{ t:'82 · Bracket dot', d:'A point with a single corner bracket.' },
     83:{ t:'83 · Hairline', d:'A single hairline. The quietest option.' },
-    84:{ t:'84 · Morph', d:'Square that morphs into a line on hover.' }
+    84:{ t:'84 · Morph', d:'Square that morphs into a line on hover.' },
+    85:{ t:'85 · Arrow bold', d:'Thick filled arrowhead that turns to face movement. Enlarges on hover.' },
+    86:{ t:'86 · Arrow pro', d:'Classic OS-style pointer. The safe professional default; scales on hover.' },
+    87:{ t:'87 · Nav arrow', d:'Navigation arrow that points the way you move.' },
+    88:{ t:'88 · Block arrow', d:'Fat block arrow that rotates to your direction.' },
+    89:{ t:'89 · Double chevron', d:'Bold » that follows your path. Grows on hover.' },
+    90:{ t:'90 · Triangle', d:'Solid bold triangle pointing where you go.' },
+    91:{ t:'91 · Long arrow', d:'Long shafted arrow; extends on hover.' },
+    92:{ t:'92 · Arrow box', d:'Bold arrow in a square; fills solid on hover.' },
+    93:{ t:'93 · Send', d:'Bold paper-plane that aims along your movement.' },
+    94:{ t:'94 · Resize', d:'Two-way resize arrow. Widens on hover.' },
+    95:{ t:'95 · Move', d:'Four-way move arrow. The drag/pan cursor.' },
+    96:{ t:'96 · Caret up', d:'Bold chevron that points in your direction.' },
+    97:{ t:'97 · Return', d:'Bold enter/return arrow. Forms & editorial.' },
+    98:{ t:'98 · Crosshair bold', d:'Thick crosshair with a solid centre. Expands on hover.' },
+    99:{ t:'99 · Pointer tag', d:'Bold arrow with an action tag. CTA-friendly.' },
+    100:{ t:'100 · Target arrow', d:'Bold arrow inside locking brackets. Turns to your direction.' }
   };
 
   // ===== ELEMENT REFS =====
@@ -1277,6 +1452,9 @@ body.mode-84.cursor-hover .cur84{width:60px;height:2px;border-radius:2px;backgro
   function tagAt(id, ease, ox, oy) { const s = np(id, ease || 0.3); $('cur' + id).style.transform = `translate3d(${s.x + ox}px,${s.y + oy}px,0)`; }
   function dirAngle() { return Math.atan2(vy, vx) * 180 / Math.PI; }
   function smartRect() { return currentHover ? currentHover.getBoundingClientRect() : null; }
+  // directional arrow helper: position the wrapper, rotate the inner SVG to face movement
+  function dir(n, ease, off) { follow(n, ease); if (Math.hypot(vx, vy) > 1) { const a = $('cur' + n + '-a'); if (a) a.style.transform = 'rotate(' + (dirAngle() + off) + 'deg)'; } }
+  const c99Text = $('cur99-text');
 
   // canvas trail buffers + thread state
   const trailLine = [], trailRibbon = [], trailComet = [];
@@ -1319,11 +1497,11 @@ body.mode-84.cursor-hover .cur84{width:60px;height:2px;border-radius:2px;backgro
     53:()=>{ follow(53,.3); const sp=Math.min(Math.hypot(vx,vy)/6,1); $('cur53-b').style.transform=`rotate(${dirAngle()}deg) scaleX(${1+sp*1.5}) scaleY(${1-sp*0.4})`; },
     54:()=>{ follow(54,.25); const kx=Math.max(-.5,Math.min(.5,vx*0.03)), ky=Math.max(-.5,Math.min(.5,vy*0.03)); $('cur54-t').style.transform=`skew(${-kx*22}deg,${-ky*22}deg)`; },
     55:()=>{ follow(55,.22); const sp=Math.min(Math.hypot(vx,vy)/7,1); $('cur55-t').style.transform=`rotate(${dirAngle()}deg) scaleX(${1+sp*2}) scaleY(${1-sp*0.45})`; },
-    56:()=>{ trailLine.push({x:mx,y:my}); if(trailLine.length>22)trailLine.shift(); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.strokeStyle='#fff'; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=2; ctx.beginPath(); trailLine.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.stroke(); follow(56,.5); },
-    57:()=>{ trailRibbon.push({x:mx,y:my}); if(trailRibbon.length>26)trailRibbon.shift(); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.lineCap='round'; for(let i=1;i<trailRibbon.length;i++){ const p=trailRibbon[i],q=trailRibbon[i-1],t=i/trailRibbon.length; ctx.strokeStyle='rgba(196,255,61,'+t+')'; ctx.lineWidth=t*10; ctx.beginPath(); ctx.moveTo(q.x,q.y); ctx.lineTo(p.x,p.y); ctx.stroke(); } follow(57,.5); },
-    58:()=>{ trailComet.push({x:mx,y:my,life:1}); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.strokeStyle='#fff'; ctx.lineCap='round'; for(let i=trailComet.length-1;i>0;i--){ const p=trailComet[i],q=trailComet[i-1]; p.life-=0.03; if(p.life<=0){trailComet.splice(i,1);continue;} ctx.globalAlpha=p.life; ctx.lineWidth=p.life*4; ctx.beginPath(); ctx.moveTo(q.x,q.y); ctx.lineTo(p.x,p.y); ctx.stroke(); } ctx.globalAlpha=1; follow(58,.6); },
+    56:()=>{ trailLine.push({x:mx,y:my}); if(trailLine.length>22)trailLine.shift(); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.strokeStyle='#fff'; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=body.classList.contains('cursor-hover')?4:2; ctx.beginPath(); trailLine.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.stroke(); follow(56,.5); },
+    57:()=>{ trailRibbon.push({x:mx,y:my}); if(trailRibbon.length>26)trailRibbon.shift(); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.lineCap='round'; for(let i=1;i<trailRibbon.length;i++){ const p=trailRibbon[i],q=trailRibbon[i-1],t=i/trailRibbon.length; ctx.strokeStyle='rgba(196,255,61,'+t+')'; ctx.lineWidth=t*(body.classList.contains('cursor-hover')?16:10); ctx.beginPath(); ctx.moveTo(q.x,q.y); ctx.lineTo(p.x,p.y); ctx.stroke(); } follow(57,.5); },
+    58:()=>{ trailComet.push({x:mx,y:my,life:1}); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.strokeStyle='#fff'; ctx.lineCap='round'; for(let i=trailComet.length-1;i>0;i--){ const p=trailComet[i],q=trailComet[i-1]; p.life-=0.03; if(p.life<=0){trailComet.splice(i,1);continue;} ctx.globalAlpha=p.life; ctx.lineWidth=p.life*(body.classList.contains('cursor-hover')?7:4); ctx.beginPath(); ctx.moveTo(q.x,q.y); ctx.lineTo(p.x,p.y); ctx.stroke(); } ctx.globalAlpha=1; follow(58,.6); },
     59:()=>{ let lx=mx,ly=my; chainSegs.forEach((s,i)=>{ const e=0.45-i*0.03; s.x=lerpN(s.x,lx,e); s.y=lerpN(s.y,ly,e); s.el.style.transform=`translate(${s.x}px,${s.y}px) translate(-50%,-50%) rotate(45deg) scale(${1-i*0.07})`; s.el.style.opacity=1-i*0.08; lx=s.x; ly=s.y; }); },
-    60:()=>{ threadX=lerpN(threadX,mx,0.12); threadY=lerpN(threadY,my,0.12); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(threadX,threadY); ctx.lineTo(mx,my); ctx.stroke(); follow(60,.6); },
+    60:()=>{ threadX=lerpN(threadX,mx,0.12); threadY=lerpN(threadY,my,0.12); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.strokeStyle='#fff'; ctx.lineWidth=body.classList.contains('cursor-hover')?3:1.5; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(threadX,threadY); ctx.lineTo(mx,my); ctx.stroke(); follow(60,.6); },
     61:()=>follow(61,.35), 62:()=>follow(62,.4), 63:()=>follow(63,.35), 64:()=>follow(64,.4),
     65:()=>{ const g=40, gx=Math.round(mx/g)*g, gy=Math.round(my/g)*g; let s=newState[65]||(newState[65]={x:gx,y:gy}); s.x=lerpN(s.x,gx,.3); s.y=lerpN(s.y,gy,.3); setTN($('cur65'),s.x,s.y); },
     66:()=>{ $('cur66-h').style.top=my+'px'; $('cur66-v').style.left=mx+'px'; setTN($('cur66'),mx,my); },
@@ -1336,7 +1514,12 @@ body.mode-84.cursor-hover .cur84{width:60px;height:2px;border-radius:2px;backgro
     77:()=>{ tagAt(77,.3,16,16); if(c77Text) c77Text.textContent=Math.round(mx/window.innerWidth*100)+'% · '+Math.round(my/window.innerHeight*100)+'%'; },
     78:()=>tagAt(78,.3,16,16),
     79:()=>follow(79,.25), 80:()=>follow(80,.25), 81:()=>follow(81,.5), 82:()=>follow(82,.4),
-    83:()=>follow(83,.45), 84:()=>follow(84,.3)
+    83:()=>follow(83,.45), 84:()=>follow(84,.3),
+    // ---- bold arrow pack 85–100 ----
+    85:()=>dir(85,.4,90), 86:()=>follow(86,.4), 87:()=>dir(87,.4,90), 88:()=>dir(88,.4,0),
+    89:()=>dir(89,.4,0), 90:()=>dir(90,.4,90), 91:()=>dir(91,.4,0), 92:()=>follow(92,.35),
+    93:()=>dir(93,.4,0), 94:()=>follow(94,.4), 95:()=>follow(95,.4), 96:()=>dir(96,.4,90),
+    97:()=>follow(97,.4), 98:()=>follow(98,.4), 99:()=>follow(99,.3), 100:()=>dir(100,.35,90)
   };
 
   // ===== MODE SWITCHER =====
@@ -1386,6 +1569,7 @@ body.mode-84.cursor-hover .cur84{width:60px;height:2px;border-radius:2px;backgro
       currentHover = t;
       const kind = t.tagName === 'A' ? 'LINK' : t.tagName === 'BUTTON' ? 'BUTTON' : 'TEXT';
       if (c75Text) c75Text.textContent = label;
+      if (c99Text) c99Text.textContent = label;
       if (c63Text) c63Text.textContent = kind;
       if (c76Text) c76Text.textContent = kind;
       hoverIndex++;
